@@ -15,7 +15,7 @@ use App\Http\Controllers\Auth\AccountController;
 |
 */
 
-Route::get('/', [HomeController::class, 'user'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/admin', [HomeController::class, 'admin'])->name('admin');
 Route::get('/register', [HomeController::class, 'register'])->name('register');
 

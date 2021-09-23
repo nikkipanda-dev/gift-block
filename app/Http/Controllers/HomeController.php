@@ -11,6 +11,11 @@ class HomeController extends Controller
         $this->middleware('guest');
     }
 
+    public function index()
+    {
+        return view('index');
+    }
+
     public function admin()
     {
         return view('admin.login');
