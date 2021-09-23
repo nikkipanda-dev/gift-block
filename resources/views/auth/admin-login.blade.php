@@ -43,6 +43,7 @@
 
         .then (success => {
             console.log(success);
+            window.location.pathname = '/admin/dashboard';
         })
 
         .catch (error => {

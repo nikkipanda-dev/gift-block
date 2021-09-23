@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\AccountController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,3 +22,5 @@ Route::get('/register', [HomeController::class, 'register'])->name('register.ind
 
 Route::post('/register/create', [AccountController::class, 'store'])->name('register.store');
 Route::post('/admin/auth', [AccountController::class, 'authenticate'])->name('admin.auth');
+
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.index');
