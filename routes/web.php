@@ -20,3 +20,4 @@ Route::get('/admin', [HomeController::class, 'admin'])->name('admin');
 Route::get('/register', [HomeController::class, 'register'])->name('register.index');
 
 Route::post('/register/create', [AccountController::class, 'store'])->name('register.store');
+Route::post('/admin/auth', [AccountController::class, 'authenticate'])->name('admin.auth');
