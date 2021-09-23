@@ -17,6 +17,6 @@ use App\Http\Controllers\Auth\AccountController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/admin', [HomeController::class, 'admin'])->name('admin');
-Route::get('/register', [HomeController::class, 'register'])->name('register');
+Route::get('/register', [HomeController::class, 'register'])->name('register.index');
 
-Route::post('/register/create', [AccountController::class, 'register'])->name('register');
+Route::post('/register/create', [AccountController::class, 'store'])->name('register.store');
