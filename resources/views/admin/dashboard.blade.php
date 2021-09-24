@@ -1,5 +1,5 @@
 @extends('layout.app')
 
 @section('content')
-    ELWJBSJFLSB aaaaaaaaaaaa
+    <a href="{{ route('admin.products.index') }}">Products</a>
 @endsection
