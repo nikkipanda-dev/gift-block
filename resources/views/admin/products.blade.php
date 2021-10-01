@@ -91,7 +91,7 @@
     function fileUpl()
     {
         const previewImg = document.getElementById('previewImg');
-        let imgCtr = 0;
+        // let imgCtr = 0;
 
         previewImg.innerHTML = '';
 
@@ -104,7 +104,7 @@
                     if (previewImg) {
                         const divTmp = document.createElement('div');
                         divTmp.className = 'd-flex bg-secondary bg-opacity-25 m-2';
-                        divTmp.id = 'img' + ++imgCtr;
+                        divTmp.id = 'img' + x.name;
                         const imageTmp = document.createElement('img');
                         imageTmp.className = 'mx-auto d-block flex-shrink-0 p-2';
                         imageTmp.src = e.target.result;
@@ -125,21 +125,17 @@
     }
 
     function photoSelect(img) {
+        console.log('img: ', img);
         const prevwID = document.getElementById(this.id);
         const prevwCont = prevwID.parentNode.children;
 
-        console.log(prevwCont.length);
-
         for (let i = 0; i < prevwCont.length; i++) {
-            // prevwCont[i].classList.remove('bg-primary');
-            // prevwCont[i].classList.add('bg-secondary');
             prevwCont[i].classList.replace('bg-primary', 'bg-secondary');
         }
 
         if (prevwID.contains(img.target)) {
-            // prevwID.classList.remove('bg-secondary');
-            // prevwID.classList.add('bg-primary');
             prevwID.classList.replace('bg-secondary', 'bg-primary');
+            prevwID.dataset.state = 'img-selected';
         }
     }
 
@@ -149,8 +145,14 @@
 
         const catgCh = this.catg.children;
         const subcatgCh = this.subcatg.children;
+        const imgCh = this.images.files;
+        const prevwCh = document.getElementById('previewImg').children;
         let catgV;
         let subcatgV;
+        let thumbV;
+        // let auxV = [];
+
+        console.log(prevwCh.length);
 
         for (let i = 1; i < catgCh.length; i++) {
             catgCh[i].selected == true ? catgV = catgCh[i].value : null;
@@ -158,6 +160,20 @@
 
         for (let i = 1; i < subcatgCh.length; i++) {
             subcatgCh[i].selected == true ? subcatgV = subcatgCh[i].value : null;
+        }
+
+        for (let i = 0; i < prevwCh.length; i++) {
+            if (prevwCh[i].dataset.state == 'img-selected') {
+                thumbV = prevwCh[i];
+            }
+        }
+
+        if (!thumbV) {
+            console.log('error!');
+
+            return false;
+        } else {
+            console.log(thumbV.id);
         }
 
         const strParam = new FormData();
@@ -170,9 +186,17 @@
         strParam.append('price', this.price.value);
         strParam.append('stock', this.stock.value);
 
-        if (this.images.files) {
-            strParam.append('images', this.images.files);
+        if (imgCh) {
+            for (let i = 0; i < imgCh.length; i++) {
+                if ('img' + imgCh[i].name == thumbV.id) {
+                    strParam.append('thumb_v', imgCh[i]);
+                } else {
+                    strParam.append('aux[]', imgCh[i]);
+                }
+            }
         }
+
+        console.log('new th: ', thumbV);
 
         axios.post(this.action, strParam)
 
