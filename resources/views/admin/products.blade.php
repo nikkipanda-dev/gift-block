@@ -90,23 +90,29 @@
 
     function fileUpl()
     {
+        const previewImg = document.getElementById('previewImg');
+        let imgCtr = 0;
+
+        previewImg.innerHTML = '';
+
         if (this.files) {
-            console.log('len: ', this.files.length);
             for (const x of this.files) {
                 let fileReader = new FileReader();
 
                 fileReader.addEventListener('load', e => {
-                    const previewImg = document.getElementById('previewImg');
 
                     if (previewImg) {
                         const divTmp = document.createElement('div');
-                        divTmp.className = 'd-flex border bg-primary bg-opacity-25 m-2';
+                        divTmp.className = 'd-flex bg-secondary bg-opacity-25 m-2';
+                        divTmp.id = 'img' + ++imgCtr;
                         const imageTmp = document.createElement('img');
-                        imageTmp.className = 'img-thumbnail mx-auto d-block flex-shrink-0';
+                        imageTmp.className = 'mx-auto d-block flex-shrink-0 p-2';
                         imageTmp.src = e.target.result;
                         imageTmp.style.objectFit = 'cover';
                         imageTmp.style.width = '200px';
                         imageTmp.style.height = '200px';
+
+                        divTmp.addEventListener('click', photoSelect);
 
                         divTmp.appendChild(imageTmp);
                         previewImg.appendChild(divTmp);
@@ -115,6 +121,25 @@
 
                 fileReader.readAsDataURL(x);
             }
+        }
+    }
+
+    function photoSelect(img) {
+        const prevwID = document.getElementById(this.id);
+        const prevwCont = prevwID.parentNode.children;
+
+        console.log(prevwCont.length);
+
+        for (let i = 0; i < prevwCont.length; i++) {
+            // prevwCont[i].classList.remove('bg-primary');
+            // prevwCont[i].classList.add('bg-secondary');
+            prevwCont[i].classList.replace('bg-primary', 'bg-secondary');
+        }
+
+        if (prevwID.contains(img.target)) {
+            // prevwID.classList.remove('bg-secondary');
+            // prevwID.classList.add('bg-primary');
+            prevwID.classList.replace('bg-secondary', 'bg-primary');
         }
     }
 
