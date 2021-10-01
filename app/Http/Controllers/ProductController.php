@@ -24,11 +24,11 @@ class ProductController extends Controller
         $categories = Category::all();
         $subcategories = Subcategory::all();
 
-        $products = Product::with('images')->get();
+        $products = Product::with('images')->has('images')->get();
 
-        // foreach ($products as $product) {
-        //     dump($product->images);
-        // }
+        foreach ($products as $product) {
+            dump($product->images);
+        }
 
         return view('admin.products');
     }
@@ -85,28 +85,29 @@ class ProductController extends Controller
             $product->save();
         }
 
-        // if ($request->hasFile('thumb_v')) {
-        //     // dump(count($request->images));
-        //     // $hasFile = true;
-        //     if ($request->file('thumb_v')->isValid()) {
+        $product_loc = Product::with('images')->where('reference', $filename)->first()->id;
+        $product = Product::find($product_loc);
 
-        //         $filename = Auth::user()->id.'-'.Str::uuid().'.'.$request->file('thumb_v')->extension();
+        if ($request->hasFile('thumb_v')) {
+            if ($request->file('thumb_v')->isValid()) {
 
-        //         Storage::putFileAs(
-        //             'public/product-img', $request->thumb_v, $filename,
-        //         );
+                $filename_tmb = 'tmb'.'-'.$filename.'.'.$request->file('thumb_v')->extension();
 
-        //         if (Storage::disk('public')->exists('product-img/'.$filename)) {
-        //             dump(public_path('product-img/'.$filename));
-        //             // $isValid = true;
-        //         }
-        //     }
-        // }
+                Storage::putFileAs(
+                    'public/product-img', $request->thumb_v, $filename_tmb,
+                );
+
+                if (Storage::disk('public')->exists('product-img/'.$filename_tmb)) {
+                    $product->images()->attach([
+                        1 => [
+                            'path' => 'storage/product-img/'.$filename_tmb,
+                        ]
+                    ]);
+                }
+            }
+        }
 
         if ($request->hasFile('aux')) {
-            $product_loc = Product::with('images')->where('reference', $filename)->first()->id;
-            $product = Product::find($product_loc);
-
             $hasFile = true;
             foreach ($request->aux as $aux) {
                 if ($aux->isValid()) {
