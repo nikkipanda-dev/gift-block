@@ -2,9 +2,35 @@
 
 @section('content')
     <!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-    New
-  </button>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        New
+    </button>
+
+    <select id="selNum" class="form-select" aria-label="Select number of record per page">
+        <option value="0" selected>Select</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>
+
+    <table class="table">
+        <thead class="text-center">
+            <tr>
+                <th scope="col" width="5.5%">#</th>
+                <th scope="col" width="19.5%">Title</th>
+                <th scope="col" width="20.5%">Description</th>
+                <th scope="col" width="10.5%">Category</th>
+                <th scope="col" width="10.5%">Subcategory</th>
+                <th scope="col" width="10.5%">Price</th>
+                <th scope="col" width="8.5%">Stock</th>
+                <th scope="col" width="14.5%">Action</th>
+            </tr>
+        </thead>
+        <tbody id="data-tbl"></tbody>
+    </table>
+
+    <div id="ppCon"></div>
 
   <!-- Modal -->
   <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -74,6 +100,7 @@
         const addProd = document.getElementById('addProd');
         const img = document.getElementById('images');
         const catg = document.getElementById('catg');
+        const selNum = document.getElementById('selNum');
 
         if (addProd) {
             addProd.addEventListener('submit', storeProd);
@@ -85,6 +112,139 @@
 
         if (catg) {
             catg.addEventListener('change', updSelect);
+        }
+
+        if (selNum) {
+            selNum.addEventListener('change', changeRec);
+        }
+
+        getProd(1, 5);
+    }
+
+    function getProd(minRec, maxRec)
+    {
+        axios.get('/admin/products/all')
+
+        .then (response => {
+            const prodGet = response.data;
+
+            genBtn(prodGet, minRec, maxRec);
+            chunkRec(prodGet, minRec, maxRec);
+        })
+
+        .catch (error => {
+            console.log('err: ', error);
+        });
+    }
+
+    function genBtn(list, startIdx, len)
+    {
+        let ppNum = 1;
+        const ppCon = document.getElementById('ppCon');
+        ppCon.innerHTML = '';
+
+        const pNumCon = document.createElement('div');
+        pNumCon.classList.add('btn-group');
+        pNumCon.setAttribute('role', 'group');
+        pNumCon.setAttribute('aria-label', 'List of page buttons');
+
+        if (list.prod.length > 1) {
+            ppNum = Math.ceil(list.prod.length / len);
+        }
+
+        for (let i = 1; i <= ppNum; i++) {
+            const pNumBtn = document.createElement('button');
+            pNumBtn.type = 'button';
+            pNumBtn.dataset.page = i;
+            pNumBtn.classList.add('btn', 'btn-primary');
+            pNumBtn.innerHTML = i;
+
+            pNumBtn.addEventListener('click', func => {
+                chunkRec(list, parseInt(func.target.dataset.page), len);
+            });
+
+            pNumCon.appendChild(pNumBtn);
+        }
+
+        ppCon.appendChild(pNumCon);
+    }
+
+    function chunkRec(list, currPage, chunkLen)
+    {
+        let chunkGet = null;
+        const dataTbl = document.getElementById('data-tbl');
+        dataTbl.innerHTML = '';
+        let ctr = ((chunkLen * currPage) - chunkLen) + 1;
+
+        if (list.prod.length > chunkLen || list.prod.length < chunkLen) {
+            chunkGet = list.prod.slice((chunkLen * currPage) - chunkLen, (chunkLen * currPage));
+        } else if (list.prod.length == chunkLen) {
+            chunkGet = list.prod.slice((chunkLen * currPage) - chunkLen);
+        }
+
+        // console.log('chunked: ', chunkGet);
+
+        for (let i = 0; i < chunkGet.length; i++) {
+            const tblRow = document.createElement('tr');
+            tblRow.id = 'tblRow' + (i + 1);
+            const tblHdr = document.createElement('th');
+            tblHdr.scope = 'row';
+            const tblTitle = document.createElement('td');
+            const tblDesc = document.createElement('td');
+            const tblCatg = document.createElement('td');
+            const tblSubcatg = document.createElement('td');
+            const tblPr = document.createElement('td');
+            const tblStk = document.createElement('td');
+            const tblAct = document.createElement('td');
+            const tblActUpd = document.createElement('button');
+            const tblActDel = document.createElement('button');
+
+            tblHdr.innerHTML = ctr++;
+            tblTitle.innerHTML = chunkGet[i].name;
+            tblDesc.innerHTML = chunkGet[i].description;
+
+            for (let listIdx = 0; listIdx < list.catg.length; listIdx++) {
+                if (list.catg[listIdx].id == chunkGet[i].category_id) {
+                    tblCatg.innerHTML = list.catg[listIdx].name;
+                    break;
+                }
+            }
+
+            for (let listIdx = 0; listIdx < list.subcatg.length; listIdx++) {
+                if (list.subcatg[listIdx].id == chunkGet[i].subcategory_id) {
+                    tblSubcatg.innerHTML = list.subcatg[listIdx].name;
+                    break;
+                }
+            }
+
+            tblPr.innerHTML = chunkGet[i].price;
+            tblStk.innerHTML = chunkGet[i].stock;
+            tblActUpd.innerHTML = 'Update';
+            tblActDel.innerHTML = 'Delete';
+
+            tblRow.appendChild(tblHdr);
+            tblRow.appendChild(tblTitle);
+            tblRow.appendChild(tblDesc);
+            tblRow.appendChild(tblCatg);
+            tblRow.appendChild(tblSubcatg);
+            tblRow.appendChild(tblPr);
+            tblRow.appendChild(tblStk);
+            tblAct.appendChild(tblActUpd);
+            tblAct.appendChild(tblActDel);
+            tblRow.appendChild(tblAct);
+
+            dataTbl.appendChild(tblRow);
+        }
+    }
+
+    function changeRec(chg)
+    {
+        const selNumCon = document.getElementById(chg.target.id).children;
+
+        for (let i of selNumCon) {
+            if (i.value != 0 && i.selected) {
+                getProd(1, i.value);
+            }
         }
     }
 

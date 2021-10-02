@@ -26,5 +26,6 @@ Route::post('/admin/auth', [AccountController::class, 'authenticate'])->name('ad
 
 Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.index');
 Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products.index');
+Route::get('/admin/products/all', [ProductController::class, 'getProd'])->name('admin.products.all');
 
 Route::post('/products/store', [ProductController::class, 'store'])->name('products.store');

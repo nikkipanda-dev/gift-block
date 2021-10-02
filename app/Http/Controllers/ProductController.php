@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Models\User;
 use App\Models\Category;
 use App\Models\Subcategory;
 use Illuminate\Support\Facades\Storage;
@@ -24,13 +23,27 @@ class ProductController extends Controller
         $categories = Category::all();
         $subcategories = Subcategory::all();
 
+        dump($categories);
+
         $products = Product::with('images')->has('images')->get();
 
-        foreach ($products as $product) {
-            dump($product->images);
-        }
+        dump($products);
 
         return view('admin.products');
+    }
+
+    public function getProd(Request $request)
+    {
+        $categories = Category::all();
+        $subcategories = Subcategory::all();
+
+        $products = Product::with('images')->has('images')->get();
+
+        return response()->json([
+            'prod' => $products,
+            'catg' => $categories,
+            'subcatg' => $subcategories,
+        ]);
     }
 
     public function store(Request $request)
@@ -38,7 +51,6 @@ class ProductController extends Controller
         $hasFile = false;
         $isValid = false;
         $ctr = 0;
-        $user = null;
         $categories = Category::all();
         $subcategories = Subcategory::all();
 
@@ -57,8 +69,6 @@ class ProductController extends Controller
 
         if ($request->usr == Auth::user()->id) {
             $isValid = false;
-
-            $user = User::find(Auth::user()->id);
 
             $product = new Product();
 
