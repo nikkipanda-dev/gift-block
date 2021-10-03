@@ -16,6 +16,7 @@ class Product extends Model
 
     public function images() {
         return $this->belongsToMany(Image::class)
+                    ->as('prod_img')
                     ->withPivot('path', 'created_at', 'updated_at')
                     ->withTimestamps();
     }
