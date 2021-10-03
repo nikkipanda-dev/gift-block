@@ -182,8 +182,6 @@
             chunkGet = list.prod.slice((chunkLen * currPage) - chunkLen);
         }
 
-        // console.log('chunked: ', chunkGet);
-
         for (let i = 0; i < chunkGet.length; i++) {
             const tblRow = document.createElement('tr');
             tblRow.id = 'tblRow' + (i + 1);
