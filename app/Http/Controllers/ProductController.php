@@ -11,7 +11,7 @@ use Database\Factories\ProductFactory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Redis;
 
 class ProductController extends Controller
 {
@@ -28,13 +28,13 @@ class ProductController extends Controller
         $products = Product::with('images')->has('images')->get();
         $product_loc = Product::with('images')->where('reference', '3-80e01caa-0524-4073-a4ca-e1b76f37c865')->first();
 
-        foreach ($product_loc->images as $image) {
-            if (Str::startsWith(str_replace('storage/product-img/', '', $image->prod_img->path), 'tmb-'.Auth::user()->id.'-'.'a05fbb1b-13ee-4db0-8ea4-5b2e349c665f')) {
-                dump(str_replace('storage/product-img/', '', $image->prod_img->path));
-            } else {
-                dump('NOT MATCH! '.$image->prod_img->path);
-            }
-        }
+        // foreach ($product_loc->images as $image) {
+        //     if (Str::startsWith(str_replace('storage/product-img/', '', $image->prod_img->path), 'tmb-'.Auth::user()->id.'-'.'a05fbb1b-13ee-4db0-8ea4-5b2e349c665f')) {
+        //         dump(str_replace('storage/product-img/', '', $image->prod_img->path));
+        //     } else {
+        //         dump('NOT MATCH! '.$image->prod_img->path);
+        //     }
+        // }
 
         // update user table reference
         // detach user tmb
@@ -245,5 +245,21 @@ class ProductController extends Controller
         }
 
         return response()->json([$request->all(), 'product' => $product, 'hasFile' => $hasFile, 'isValid' => $isValid, 'thumbpath' => $thumb_path, 'dump' => $dump, 'arr' => $aux_arr]);
+    }
+
+    public function destroy(Request $request)
+    {
+        $isDel = false;
+
+        if ($request->usr == Auth::user()->id) {
+            $product_loc = Product::with('images')->where('reference', $request->ref)->first();
+            $product = Product::find($product_loc->id);
+
+            if ($product) {
+                $product->delete();
+                $isDel = true;
+            }
+        }
+        return response()->json([$request->all(), 'isDel' => $isDel]);
     }
 }

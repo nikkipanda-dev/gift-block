@@ -153,6 +153,30 @@
     </div>
   </div>
 
+  <!-- Modal -->
+  <div class="modal fade" id="staticDel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="Delete product" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Delete Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="desBody">
+            <div id="desWarn"></div>
+            <form action="{{ route('products.destroy') }}" method="POST" id="desProd">
+                @csrf
+                <input type="hidden" name="desUsr" id="desUsr" value="{{ Auth::user()->id }}">
+                <input type="hidden" name="desRef" id="desRef">
+                <button type="submit" class="btn btn-danger">Submit</button>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
     window.addEventListener('load', newProduct);
 
@@ -324,9 +348,20 @@
             tblActUpd.dataset.price = chunkGet[i].price;
             tblActUpd.dataset.stock = chunkGet[i].stock;
             tblActUpd.dataset.ref = chunkGet[i].reference;
+            tblActDel.classList.add('btn');
+            tblActDel.dataset.bsToggle = 'modal';
+            tblActDel.dataset.bsTarget = '#staticDel';
+            tblActDel.innerHTML = 'Delete';
+            tblActDel.dataset.row = tblRow.id;
+            // tblActDel.dataset.thumbSrc = tblThumbImg.src;
+            tblActDel.dataset.name = chunkGet[i].name;
+            // tblActDel.dataset.description = chunkGet[i].description;
+            // tblActDel.dataset.price = chunkGet[i].price;
+            // tblActDel.dataset.stock = chunkGet[i].stock;
+            tblActDel.dataset.ref = chunkGet[i].reference;
 
             tblActUpd.addEventListener('click', populateEl);
-            tblActDel.innerHTML = 'Delete';
+            tblActDel.addEventListener('click', populateEl)
 
             tblRow.appendChild(tblHdr);
             tblImg.appendChild(tblThumbImg);
@@ -634,68 +669,89 @@
     function populateEl(el)
     {
         console.log('el: ', el.target);
-        const updProd = document.getElementById('updProd');
-        updProd.addEventListener('submit', editProd);
-        const updPreviewImg = document.getElementById('updPreviewImg');
-        updPreviewImg.innerHTML = '';
-        const updSelCatg = document.getElementById('updCatg').children;
-        const updSelSubcatg = document.getElementById('updSubcatg');
 
-        const updRow = el.target.dataset.row;
-        const updRef = el.target.dataset.ref;
-        const updName = el.target.dataset.name;
-        const updDesc = el.target.dataset.description;
-        const updCatgRef = el.target.dataset.category_id;
-        const updSubcatgRef = el.target.dataset.subcategory_id;
-        const updPr = el.target.dataset.price;
-        const updStk = el.target.dataset.stock;
-        let updThumbSrc = null;
-        let updAux = null;
+        if (el.target.dataset.bsTarget.includes('Upd')) {
+            const updProd = document.getElementById('updProd');
+            updProd.addEventListener('submit', editProd);
+            const updPreviewImg = document.getElementById('updPreviewImg');
+            updPreviewImg.innerHTML = '';
+            const updSelCatg = document.getElementById('updCatg').children;
+            const updSelSubcatg = document.getElementById('updSubcatg');
 
-        const all = el.target.dataset;
+            const updRow = el.target.dataset.row;
+            const updRef = el.target.dataset.ref;
+            const updName = el.target.dataset.name;
+            const updDesc = el.target.dataset.description;
+            const updCatgRef = el.target.dataset.category_id;
+            const updSubcatgRef = el.target.dataset.subcategory_id;
+            const updPr = el.target.dataset.price;
+            const updStk = el.target.dataset.stock;
+            let updThumbSrc = null;
+            let updAux = null;
 
-        for (let i in all) {
-            if (i.startsWith('thumb')) {
-                const thumbDiv = document.createElement('div');
-                thumbDiv.className = 'd-flex bg-primary bg-opacity-25 m-2';
-                const thumbImg = document.createElement('img');
-                thumbImg.className = 'mx-auto d-block flex-shrink-0 p-2';
-                thumbImg.src = all[i];
-                thumbImg.style.objectFit = 'cover';
-                thumbImg.style.width = '200px';
-                thumbImg.style.height = '200px';
-                updThumbSrc = all[i];
+            const all = el.target.dataset;
 
-                thumbDiv.appendChild(thumbImg);
-                updPreviewImg.prepend(thumbDiv);
-            } else if (i.startsWith('aux')) {
-                const auxDiv = document.createElement('div');
-                auxDiv.className = 'd-flex bg-secondary bg-opacity-25 m-2';
-                const auxImg = document.createElement('img');
-                auxImg.className = 'mx-auto d-block flex-shrink-0 p-2';
-                auxImg.src = all[i];
-                auxImg.style.objectFit = 'cover';
-                auxImg.style.width = '200px';
-                auxImg.style.height = '200px';
+            for (let i in all) {
+                if (i.startsWith('thumb')) {
+                    const thumbDiv = document.createElement('div');
+                    thumbDiv.className = 'd-flex bg-primary bg-opacity-25 m-2';
+                    const thumbImg = document.createElement('img');
+                    thumbImg.className = 'mx-auto d-block flex-shrink-0 p-2';
+                    thumbImg.src = all[i];
+                    thumbImg.style.objectFit = 'cover';
+                    thumbImg.style.width = '200px';
+                    thumbImg.style.height = '200px';
+                    updThumbSrc = all[i];
 
-                auxDiv.appendChild(auxImg);
-                updPreviewImg.appendChild(auxDiv);
+                    thumbDiv.appendChild(thumbImg);
+                    updPreviewImg.prepend(thumbDiv);
+                } else if (i.startsWith('aux')) {
+                    const auxDiv = document.createElement('div');
+                    auxDiv.className = 'd-flex bg-secondary bg-opacity-25 m-2';
+                    const auxImg = document.createElement('img');
+                    auxImg.className = 'mx-auto d-block flex-shrink-0 p-2';
+                    auxImg.src = all[i];
+                    auxImg.style.objectFit = 'cover';
+                    auxImg.style.width = '200px';
+                    auxImg.style.height = '200px';
+
+                    auxDiv.appendChild(auxImg);
+                    updPreviewImg.appendChild(auxDiv);
+                }
             }
-        }
 
-        for (let i = 0; i < updSelCatg.length; i++) {
-            if (updSelCatg[i].value == updCatgRef) {
-                updSelCatg[i].selected = true;
-                updSelectSub(updSelCatg[i].value, 'upd', false, updSubcatgRef);
-                break;
+            for (let i = 0; i < updSelCatg.length; i++) {
+                if (updSelCatg[i].value == updCatgRef) {
+                    updSelCatg[i].selected = true;
+                    updSelectSub(updSelCatg[i].value, 'upd', false, updSubcatgRef);
+                    break;
+                }
             }
-        }
 
-        updProd.updRef.value = updRef;
-        updProd.updName.value = updName;
-        updProd.updDescription.value = updDesc;
-        updProd.updPrice.value = updPr;
-        updProd.updStock.value = updStk;
+            updProd.updRef.value = updRef;
+            updProd.updName.value = updName;
+            updProd.updDescription.value = updDesc;
+            updProd.updPrice.value = updPr;
+            updProd.updStock.value = updStk;
+        } else if (el.target.dataset.bsTarget.includes('Del')) {
+            const desProd = document.getElementById('desProd');
+            const desWarn = document.getElementById('desWarn');
+            desWarn.innerHTML = '';
+            const desName = el.target.dataset.name;
+            const desHdr = document.createElement('div');
+            const desRow = el.target.dataset.row;
+            const desRef = el.target.dataset.ref;
+
+            desProd.desRef.value = desRef;
+            desProd.dataset.row = desRow;
+
+            desWarn.classList.add('alert', 'alert-warning');
+
+            desHdr.innerHTML = 'Are you sure you want to delete ' + desName + '&#x3f; This action is irreversible.';
+
+            desWarn.prepend(desHdr);
+            desProd.addEventListener('submit', dstrProd);
+        }
     }
 
     function editProd(ed)
@@ -770,6 +826,29 @@
         .catch (error => {
             console.log('erro: ', error);
         })
+    }
+
+    function dstrProd(dstr)
+    {
+        dstr.preventDefault();
+
+        console.log('destr', this);
+
+        const dstrParam = new FormData();
+
+        dstrParam.append('usr', this.desUsr.value);
+        dstrParam.append('ref', this.desRef.value);
+
+        axios.post(this.action, dstrParam)
+
+        .then (response => {
+            console.log('response: ', response);
+        })
+
+        .catch (error => {
+            console.log('error: ', error);
+        })
+
     }
 </script>
 @endsection

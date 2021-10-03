@@ -30,3 +30,4 @@ Route::get('/admin/products/all', [ProductController::class, 'getProd'])->name('
 
 Route::post('/products/store', [ProductController::class, 'store'])->name('products.store');
 Route::post('/products/update', [ProductController::class, 'update'])->name('products.update');
+Route::post('/products/destroy', [ProductController::class, 'destroy'])->name('products.destroy');
