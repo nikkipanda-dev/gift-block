@@ -94,7 +94,7 @@
   </div>
 
   <div class="modal fade" id="staticUpd" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="Edit product details" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="staticBackdropLabel">Edit Product Details</h5>
@@ -104,6 +104,7 @@
             <form action="{{ route('products.update') }}" method="POST" enctype="multipart/form-data" id="updProd">
                 @csrf
                 <input type="hidden" name="updUsr" id="updUsr" value="{{ Auth::user()->id }}">
+                <input type="hidden" name="updRef" id="updRef">
                 <div class="mb-3" id="updImgForm">
                     <label for="updImages" class="form-label">Upload photos:</label>
                     <input  class="form-control form-control-sm" id="updImages" name="updImages[]" type="file" accept="image/png, image/jpg, image/jpeg" multiple>
@@ -159,6 +160,7 @@
     {
         const addProd = document.getElementById('addProd');
         const img = document.getElementById('images');
+        const updImg = document.getElementById('updImages');
         const catg = document.getElementById('catg');
         const updCatg = document.getElementById('updCatg');
         const selNum = document.getElementById('selNum');
@@ -169,6 +171,10 @@
 
         if (img) {
             img.addEventListener('change', fileUpl);
+        }
+
+        if (updImg) {
+            updImg.addEventListener('change', fileUpl);
         }
 
         if (catg) {
@@ -217,23 +223,25 @@
 
         if (list.prod.length > 1) {
             ppNum = Math.ceil(list.prod.length / len);
+
+            // if (ppNum < 6) {
+                for (let i = 1; i <= ppNum; i++) {
+                    const pNumBtn = document.createElement('button');
+                    pNumBtn.type = 'button';
+                    pNumBtn.dataset.page = i;
+                    pNumBtn.classList.add('btn', 'btn-primary');
+                    pNumBtn.innerHTML = i;
+
+                    pNumBtn.addEventListener('click', func => {
+                        chunkRec(list, parseInt(func.target.dataset.page), len);
+                    });
+
+                    pNumCon.appendChild(pNumBtn);
+                }
+
+                ppCon.appendChild(pNumCon);
+            // }
         }
-
-        for (let i = 1; i <= ppNum; i++) {
-            const pNumBtn = document.createElement('button');
-            pNumBtn.type = 'button';
-            pNumBtn.dataset.page = i;
-            pNumBtn.classList.add('btn', 'btn-primary');
-            pNumBtn.innerHTML = i;
-
-            pNumBtn.addEventListener('click', func => {
-                chunkRec(list, parseInt(func.target.dataset.page), len);
-            });
-
-            pNumCon.appendChild(pNumBtn);
-        }
-
-        ppCon.appendChild(pNumCon);
     }
 
     function chunkRec(list, currPage, chunkLen)
@@ -251,6 +259,7 @@
         }
 
         for (let i = 0; i < chunkGet.length; i++) {
+            console.log('ref: ', chunkGet[i].reference);
             const tblRow = document.createElement('tr');
             tblRow.id = 'tblRow' + (i + 1);
             const tblHdr = document.createElement('th');
@@ -270,15 +279,15 @@
             tblHdr.innerHTML = ctr++;
 
             for (let listIdx = 0; listIdx < chunkGet[i].images.length; listIdx++) {
-                if (chunkGet[i].images[listIdx].pivot.image_id == 1) {
-                    console.log('HELUU');
+                if (chunkGet[i].images[listIdx].prod_img.image_id == 1) {
+                    // console.log('HELUU');
                     tblThumbImg.style.objectFit = 'cover';
                     tblThumbImg.style.width = '100px';
                     tblThumbImg.style.height = '100px';
-                    tblThumbImg.src = '/' + chunkGet[i].images[listIdx].pivot.path;
-                } else if (chunkGet[i].images[listIdx].pivot.image_id == 2) {
+                    tblThumbImg.src = '/' + chunkGet[i].images[listIdx].prod_img.path;
+                } else if (chunkGet[i].images[listIdx].prod_img.image_id == 2) {
                     const auxSrc = 'auxSrc' + imgCtr++;
-                    tblActUpd.dataset[auxSrc] = '/' + chunkGet[i].images[listIdx].pivot.path
+                    tblActUpd.dataset[auxSrc] = '/' + chunkGet[i].images[listIdx].prod_img.path
                 }
             }
 
@@ -314,6 +323,7 @@
             tblActUpd.dataset.description = chunkGet[i].description;
             tblActUpd.dataset.price = chunkGet[i].price;
             tblActUpd.dataset.stock = chunkGet[i].stock;
+            tblActUpd.dataset.ref = chunkGet[i].reference;
 
             tblActUpd.addEventListener('click', populateEl);
             tblActDel.innerHTML = 'Delete';
@@ -348,7 +358,19 @@
 
     function fileUpl()
     {
-        const previewImg = document.getElementById('previewImg');
+
+        console.log('this file: ', this);
+        let previewImg = null;
+
+        if (this.id.includes('upd')) {
+            console.log('updddd');
+            previewImg = document.getElementById('updPreviewImg');
+
+        } else {
+            console.log('NOT updddd');
+            previewImg = document.getElementById('previewImg');
+        }
+
         previewImg.innerHTML = '';
 
         if (this.files) {
@@ -395,45 +417,29 @@
         }
     }
 
-    function updSelect(opt)
+    function updSelect()
     {
-
         const catgRef = this.children; // this.children
         let catgRefVal = null; // catg val
 
         console.log('this: ', this);
 
-        if (this.id.includes('upd')) {
-
-            console.log('update!!');
-
-            for (let i = 1; i < catgRef.length; i++) {
-                if (catgRef[i].selected == true) {
-                    catgRefVal = catgRef[i].value;
-                    console.log('catgRefVal: ', catgRefVal);
-                    updSelectSub(catgRefVal, 'upd', true);
-                    break;
-                }
-            }
-        } else {
-            console.log('not upd');
-
-            for (let i = 1; i < catgRef.length; i++) {
-                if (catgRef[i].selected == true) {
-                    catgRefVal = catgRef[i].value;
-                    updSelectSub(catgRefVal, 'ins');
-                    break;
-                }
+        for (let i = 1; i < catgRef.length; i++) {
+            if (catgRef[i].selected == true) {
+                catgRefVal = catgRef[i].value;
+                this.id.includes('upd') ? updSelectSub(catgRefVal, 'upd', true) : updSelectSub(catgRefVal, 'ins');
+                break;
             }
         }
     }
 
     function updSelectSub(catgRefVal, type, init, subcatVal)
     {
-        console.log('val: ', catgRefVal);
-        console.log('type: ', type);
-        console.log('init: ', init);
-        console.log('subcatVal: ', subcatVal);
+        // console.log('val: ', catgRefVal);
+        // console.log('type: ', type);
+        // console.log('init: ', init);
+        // console.log('subcatVal: ', subcatVal);
+
         let subcatg = null;
         const subcatgHeader = document.createElement('option');
 
@@ -447,6 +453,7 @@
                 subcatgHeader.selected = true;
             }
         }
+
         subcatg.innerHTML = '';
 
         const subcatgFHR = document.createElement('option');
@@ -459,6 +466,11 @@
         subcatgHeader.innerHTML = tempLit`${catgRefVal}`;
 
         if (catgRefVal === 'AP') {
+            if (!init) {
+                (subcatVal == 'FHR') ? subcatgFHR.selected = true :
+                (subcatVal == 'FHM') ? subcatgFHM.selected = true : null;
+            }
+
             subcatg.appendChild(subcatgFHR);
             subcatg.appendChild(subcatgFHM);
         } else if (catgRefVal === 'BK') {
@@ -478,6 +490,14 @@
             subcatgSFH.value = 'SFH';
             subcatgSFH.innerHTML = 'Self-Help';
 
+            if (!init) {
+                (subcatVal == 'AAC') ? subcatgAAC.selected = true :
+                (subcatVal == 'FTN') ? subcatgFTN.selected = true :
+                (subcatVal == 'PHL') ? subcatgPHL.selected = true :
+                (subcatVal == 'PSY') ? subcatgPSY.selected = true :
+                (subcatVal == 'SFH') ? subcatgSFH.selected = true : null;
+            }
+
             subcatg.appendChild(subcatgAAC);
             subcatg.appendChild(subcatgFTN);
             subcatg.appendChild(subcatgPHL);
@@ -491,6 +511,11 @@
             subcatgSNK.value = 'SNK';
             subcatgSNK.innerHTML = 'Snacks';
 
+            if (!init) {
+                (subcatVal == 'CAT') ? subcatgCAT.selected = true :
+                (subcatVal == 'SNK') ? subcatgSNK.selected = true : null;
+            }
+
             subcatg.appendChild(subcatgCAT);
             subcatg.appendChild(subcatgSNK);
         } else if (catgRefVal === 'MD') {
@@ -501,9 +526,19 @@
             subcatgPTG.value = 'PTG';
             subcatgPTG.innerHTML = 'Photography';
 
+            if (!init) {
+                (subcatVal == 'AUD') ? subcatgAUD.selected = true :
+                (subcatVal == 'PTG') ? subcatgPTG.selected = true : null;
+            }
+
             subcatg.appendChild(subcatgAUD);
             subcatg.appendChild(subcatgPTG);
         } else if (catgRefVal === 'PC') {
+            if (!init) {
+                (subcatVal == 'FHR') ? subcatgFHR.selected = true :
+                (subcatVal == 'FHM') ? subcatgFHM.selected = true : null;
+            }
+
             subcatg.appendChild(subcatgFHR);
             subcatg.appendChild(subcatgFHM);
         }
@@ -572,7 +607,7 @@
         strParam.append('price', this.price.value);
         strParam.append('stock', this.stock.value);
 
-        if (imgCh) {
+        if (imgCh.length != 0) {
             for (let i = 0; i < imgCh.length; i++) {
                 if ('img' + imgCh[i].name == thumbV.id) {
                     strParam.append('thumb_v', imgCh[i]);
@@ -600,12 +635,14 @@
     {
         console.log('el: ', el.target);
         const updProd = document.getElementById('updProd');
+        updProd.addEventListener('submit', editProd);
         const updPreviewImg = document.getElementById('updPreviewImg');
         updPreviewImg.innerHTML = '';
         const updSelCatg = document.getElementById('updCatg').children;
         const updSelSubcatg = document.getElementById('updSubcatg');
 
         const updRow = el.target.dataset.row;
+        const updRef = el.target.dataset.ref;
         const updName = el.target.dataset.name;
         const updDesc = el.target.dataset.description;
         const updCatgRef = el.target.dataset.category_id;
@@ -625,8 +662,8 @@
                 thumbImg.className = 'mx-auto d-block flex-shrink-0 p-2';
                 thumbImg.src = all[i];
                 thumbImg.style.objectFit = 'cover';
-                thumbImg.style.width = '100px';
-                thumbImg.style.height = '100px';
+                thumbImg.style.width = '200px';
+                thumbImg.style.height = '200px';
                 updThumbSrc = all[i];
 
                 thumbDiv.appendChild(thumbImg);
@@ -638,8 +675,8 @@
                 auxImg.className = 'mx-auto d-block flex-shrink-0 p-2';
                 auxImg.src = all[i];
                 auxImg.style.objectFit = 'cover';
-                auxImg.style.width = '100px';
-                auxImg.style.height = '100px';
+                auxImg.style.width = '200px';
+                auxImg.style.height = '200px';
 
                 auxDiv.appendChild(auxImg);
                 updPreviewImg.appendChild(auxDiv);
@@ -654,11 +691,85 @@
             }
         }
 
-        console.log('upd name: ', updProd.updName);
+        updProd.updRef.value = updRef;
         updProd.updName.value = updName;
         updProd.updDescription.value = updDesc;
         updProd.updPrice.value = updPr;
         updProd.updStock.value = updStk;
+    }
+
+    function editProd(ed)
+    {
+        ed.preventDefault();
+
+        console.log('HI! ', ed.target);
+
+        const edCatg = this.updCatg.children;
+        const edSubcatg = this.updSubcatg.children;
+        const edImgs = this.updImages.files;
+        const edImgCon = document.getElementById('updPreviewImg').children;
+        let edCatgV = null;
+        let edSubcatgV = null;
+        let edThumbV = null;
+
+        for (let i = 1; i < edCatg.length; i++) {
+            edCatg[i].selected == true ? edCatgV = edCatg[i].value : null;
+        }
+
+        for (let i = 1; i < edSubcatg.length; i++) {
+            edSubcatg[i].selected == true ? edSubcatgV = edSubcatg[i].value : null;
+        }
+
+        const updParam = new FormData();
+
+        updParam.append('usr', this.updUsr.value);
+        updParam.append('name', this.updName.value);
+        updParam.append('description', this.updDescription.value);
+        updParam.append('catg', edCatgV);
+        updParam.append('subcatg', edSubcatgV);
+        updParam.append('price', this.updPrice.value);
+        updParam.append('stock', this.updStock.value);
+        updParam.append('ref', this.updRef.value);
+
+        console.log('sub: ', edSubcatgV);
+        console.log('catg: ', edCatgV);
+
+        if (edImgs.length != 0) {
+            console.log('with files');
+            for (let i = 0; i < edImgCon.length; i++) {
+                if (edImgCon[i].dataset.state == 'img-selected') {
+                    edThumbV = edImgCon[i];
+                    break;
+                }
+            }
+
+            if (!edThumbV) {
+                console.log('ERROR! NO THUMBNAIL SELECTED');
+            } else {
+                for (let i = 0; i < edImgs.length; i++) {
+                    console.log('i: ', edImgs[i]);
+                    if ('img' + edImgs[i].name == edThumbV.id) {
+                        console.log('thumbnail: ', edThumbV.id);
+                        updParam.append('thumb_v', edImgs[i]);
+                    } else {
+                        console.log('aux: ', edImgs[i].name);
+                        updParam.append('aux[]', edImgs[i]);
+                    }
+                }
+            }
+        } else {
+            console.log('no file');
+        }
+
+        axios.post(this.action, updParam)
+
+        .then (response => {
+            console.log('response: ', response)
+        })
+
+        .catch (error => {
+            console.log('erro: ', error);
+        })
     }
 </script>
 @endsection

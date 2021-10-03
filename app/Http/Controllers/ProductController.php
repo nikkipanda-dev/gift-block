@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Subcategory;
+use Database\Factories\ProductFactory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +26,19 @@ class ProductController extends Controller
         $subcategories = Subcategory::all();
 
         $products = Product::with('images')->has('images')->get();
+        $product_loc = Product::with('images')->where('reference', '3-80e01caa-0524-4073-a4ca-e1b76f37c865')->first();
 
-        dump($products);
+        foreach ($product_loc->images as $image) {
+            if (Str::startsWith(str_replace('storage/product-img/', '', $image->prod_img->path), 'tmb-'.Auth::user()->id.'-'.'a05fbb1b-13ee-4db0-8ea4-5b2e349c665f')) {
+                dump(str_replace('storage/product-img/', '', $image->prod_img->path));
+            } else {
+                dump('NOT MATCH! '.$image->prod_img->path);
+            }
+        }
+
+        // update user table reference
+        // detach user tmb
+        // attach new user tmb
 
         return view('admin.products');
     }
@@ -144,6 +157,93 @@ class ProductController extends Controller
 
     public function update(Request $request)
     {
-        return response()->json($request->all());
+        $isValid = false;
+        $hasFile = false;
+        $product = null;
+        $product_loc = null;
+        $thumb_path = null;
+        $dump = null;
+        $aux_arr = [];
+        $ctr = 0;
+
+        $filename = Auth::user()->id.'-'.Str::uuid();
+
+        if ($request->usr == Auth::user()->id) {
+            if ($request->hasFile('thumb_v')) {
+                if ($request->file('thumb_v')->isValid()) {
+                    $product_loc = Product::with('images')->where('reference', $request->ref)->first();
+                    $product = Product::find($product_loc->id);
+
+                    if ($product_loc) {
+                        foreach ($product_loc->images as $image) {
+                            if (Str::startsWith(str_replace('storage/product-img/', '', $image->prod_img->path), 'tmb-'.$request->ref)) {
+                                $thumb_path = $image->prod_img->path;
+                            } else {
+                                array_push($aux_arr, $image->prod_img->path);
+                            }
+                        }
+
+                        $product->images()->detach();
+                    }
+
+                    $filename_tmb = 'tmb'.'-'.$filename.'.'.$request->file('thumb_v')->extension();
+
+                    if (Storage::disk('public')->exists(str_replace('storage/', '', $thumb_path))) {
+                        Storage::putFileAs(
+                            'public/product-img', $request->thumb_v, $filename_tmb,
+                        );
+
+                        if (Storage::disk('public')->exists('product-img/'.$filename_tmb)) {
+                            $product->images()->attach([
+                                1 => [
+                                    'path' => 'storage/product-img/'.$filename_tmb,
+                                ]
+                            ]);
+
+                            Storage::disk('public')->delete(str_replace('storage', '', $thumb_path));
+
+                            if (count($aux_arr) !== 0) {
+                                foreach($aux_arr as $aux) {
+                                    if (Storage::disk('public')->exists(str_replace('storage/', '', $aux))) {
+                                        Storage::disk('public')->delete(str_replace('storage', '', $aux));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if ($request->hasFile('aux')) {
+                        $hasFile = true;
+                        foreach ($request->aux as $aux) {
+                            if ($aux->isValid()) {
+                                $isValid = true;
+
+                                $filename_aux = ++$ctr.'-'.$filename.'.'.$aux->extension();
+
+                                Storage::putFileAs(
+                                    'public/product-img', $aux, $filename_aux,
+                                );
+
+                                if (Storage::disk('public')->exists('product-img/'.$filename_aux)) {
+                                    $product->images()->attach([
+                                        2 => [
+                                            'path' => 'storage/product-img/'.$filename_aux,
+                                        ]
+                                    ]);
+                                    $isValid = true;
+                                }
+                            }
+                        }
+                    }
+
+                    $product->reference = $filename;
+
+                    $product->save();
+
+                }
+            }
+        }
+
+        return response()->json([$request->all(), 'product' => $product, 'hasFile' => $hasFile, 'isValid' => $isValid, 'thumbpath' => $thumb_path, 'dump' => $dump, 'arr' => $aux_arr]);
     }
 }
