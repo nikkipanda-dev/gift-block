@@ -23,8 +23,6 @@ class ProductController extends Controller
         $categories = Category::all();
         $subcategories = Subcategory::all();
 
-        dump($categories);
-
         $products = Product::with('images')->has('images')->get();
 
         dump($products);
@@ -142,5 +140,10 @@ class ProductController extends Controller
         }
 
         return response()->json([$request->all(), 'hasFile' => $hasFile, 'isValid' => $isValid]);
+    }
+
+    public function update(Request $request)
+    {
+        return response()->json($request->all());
     }
 }

@@ -2,7 +2,7 @@
 
 @section('content')
     <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticIns">
         New
     </button>
 
@@ -14,33 +14,34 @@
         <option value="100">100</option>
     </select>
 
-    <table class="table">
+    <table class="table table-responsive">
         <thead class="text-center">
             <tr>
-                <th scope="col" width="5.5%">#</th>
-                <th scope="col" width="19.5%">Title</th>
-                <th scope="col" width="20.5%">Description</th>
-                <th scope="col" width="10.5%">Category</th>
-                <th scope="col" width="10.5%">Subcategory</th>
-                <th scope="col" width="10.5%">Price</th>
-                <th scope="col" width="8.5%">Stock</th>
-                <th scope="col" width="14.5%">Action</th>
+                <th scope="col" width="5.11%">#</th>
+                <th scope="col" width="12.11%">Img</th>
+                <th scope="col" width="14.11%">Title</th>
+                <th scope="col" width="14.11%">Description</th>
+                <th scope="col" width="11.11%">Category</th>
+                <th scope="col" width="11.11%">Subcategory</th>
+                <th scope="col" width="10.11%">Price</th>
+                <th scope="col" width="10.11%">Stock</th>
+                <th scope="col" width="11.11%">Action</th>
             </tr>
         </thead>
-        <tbody id="data-tbl"></tbody>
+        <tbody id="dataTbl" class="text-center"></tbody>
     </table>
 
     <div id="ppCon"></div>
 
   <!-- Modal -->
-  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal fade" id="staticIns" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="Insert product" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="staticBackdropLabel">New Product</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" id="insBody">
             <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" id="addProd">
                 @csrf
                 <input type="hidden" name="usr" id="usr" value="{{ Auth::user()->id }}">
@@ -92,6 +93,65 @@
     </div>
   </div>
 
+  <div class="modal fade" id="staticUpd" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="Edit product details" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Edit Product Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="updBody">
+            <form action="{{ route('products.update') }}" method="POST" enctype="multipart/form-data" id="updProd">
+                @csrf
+                <input type="hidden" name="updUsr" id="updUsr" value="{{ Auth::user()->id }}">
+                <div class="mb-3" id="updImgForm">
+                    <label for="updImages" class="form-label">Upload photos:</label>
+                    <input  class="form-control form-control-sm" id="updImages" name="updImages[]" type="file" accept="image/png, image/jpg, image/jpeg" multiple>
+                </div>
+                <div id="updPreviewImg" class="d-flex justify-content-center flex-row flex-wrap align-items-center border"></div>
+                  <div class="mb-3">
+                    <label for="updName" class="form-label">Name: </label>
+                    <input type="text" class="form-control" id="updName" name="updName">
+                  </div>
+                  <div class="mb-3">
+                      <label for="updDescription" class="form-label">Description:</label>
+                      <textarea class="form-control" id="updDescription" name="updDescription" rows="4"></textarea>
+                </div>
+                <div class="d-flex flex-column flex-sm-row mb-3">
+                    <div class="me-auto">
+                        <select class="form-select" id="updCatg" aria-label="Select categories">
+                            <option selected>Category</option>
+                            <option value="AP">Apparel</option>
+                            <option value="BK">Book</option>
+                            <option value="GT">Gourmet</option>
+                            <option value="MD">Media</option>
+                            <option value="PC">Personal Care</option>
+                          </select>
+                    </div>
+                    <div>
+                        <select class="form-select" id="updSubcatg" aria-label="Select subcategories">
+                            <option selected>Subcategory</option>
+                        </select>
+                    </div>
+                </div>
+                    <div class="mb-3">
+                      <label for="updPrice" class="form-label">Price:</label>
+                      <input type="number" class="form-control" min="1" max="50000" step=".01" id="updPrice" name="updPrice">
+                    </div>
+                    <div class="mb-3">
+                      <label for="updStock" class="form-label">Stock:</label>
+                      <input type="number" class="form-control" min="1" max="1000000000" id="updStock" name="updStock">
+                    </div>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
     window.addEventListener('load', newProduct);
 
@@ -100,6 +160,7 @@
         const addProd = document.getElementById('addProd');
         const img = document.getElementById('images');
         const catg = document.getElementById('catg');
+        const updCatg = document.getElementById('updCatg');
         const selNum = document.getElementById('selNum');
 
         if (addProd) {
@@ -112,6 +173,10 @@
 
         if (catg) {
             catg.addEventListener('change', updSelect);
+        }
+
+        if (updCatg) {
+            updCatg.addEventListener('change', updSelect);
         }
 
         if (selNum) {
@@ -127,6 +192,8 @@
 
         .then (response => {
             const prodGet = response.data;
+
+            console.log('prod: ', prodGet.prod);
 
             genBtn(prodGet, minRec, maxRec);
             chunkRec(prodGet, minRec, maxRec);
@@ -172,9 +239,10 @@
     function chunkRec(list, currPage, chunkLen)
     {
         let chunkGet = null;
-        const dataTbl = document.getElementById('data-tbl');
+        const dataTbl = document.getElementById('dataTbl');
         dataTbl.innerHTML = '';
         let ctr = ((chunkLen * currPage) - chunkLen) + 1;
+        let imgCtr = 1;
 
         if (list.prod.length > chunkLen || list.prod.length < chunkLen) {
             chunkGet = list.prod.slice((chunkLen * currPage) - chunkLen, (chunkLen * currPage));
@@ -187,6 +255,8 @@
             tblRow.id = 'tblRow' + (i + 1);
             const tblHdr = document.createElement('th');
             tblHdr.scope = 'row';
+            const tblImg = document.createElement('td');
+            const tblThumbImg = document.createElement('img');
             const tblTitle = document.createElement('td');
             const tblDesc = document.createElement('td');
             const tblCatg = document.createElement('td');
@@ -198,12 +268,27 @@
             const tblActDel = document.createElement('button');
 
             tblHdr.innerHTML = ctr++;
+
+            for (let listIdx = 0; listIdx < chunkGet[i].images.length; listIdx++) {
+                if (chunkGet[i].images[listIdx].pivot.image_id == 1) {
+                    console.log('HELUU');
+                    tblThumbImg.style.objectFit = 'cover';
+                    tblThumbImg.style.width = '100px';
+                    tblThumbImg.style.height = '100px';
+                    tblThumbImg.src = '/' + chunkGet[i].images[listIdx].pivot.path;
+                } else if (chunkGet[i].images[listIdx].pivot.image_id == 2) {
+                    const auxSrc = 'auxSrc' + imgCtr++;
+                    tblActUpd.dataset[auxSrc] = '/' + chunkGet[i].images[listIdx].pivot.path
+                }
+            }
+
             tblTitle.innerHTML = chunkGet[i].name;
             tblDesc.innerHTML = chunkGet[i].description;
 
             for (let listIdx = 0; listIdx < list.catg.length; listIdx++) {
                 if (list.catg[listIdx].id == chunkGet[i].category_id) {
                     tblCatg.innerHTML = list.catg[listIdx].name;
+                    tblActUpd.dataset.category_id = list.catg[listIdx].reference;
                     break;
                 }
             }
@@ -211,16 +296,31 @@
             for (let listIdx = 0; listIdx < list.subcatg.length; listIdx++) {
                 if (list.subcatg[listIdx].id == chunkGet[i].subcategory_id) {
                     tblSubcatg.innerHTML = list.subcatg[listIdx].name;
+                    tblActUpd.dataset.subcategory_id = list.subcatg[listIdx].reference;
                     break;
                 }
             }
 
             tblPr.innerHTML = chunkGet[i].price;
             tblStk.innerHTML = chunkGet[i].stock;
+
+            tblActUpd.classList.add('btn');
+            tblActUpd.dataset.bsToggle = 'modal';
+            tblActUpd.dataset.bsTarget = '#staticUpd';
             tblActUpd.innerHTML = 'Update';
+            tblActUpd.dataset.row = tblRow.id;
+            tblActUpd.dataset.thumbSrc = tblThumbImg.src;
+            tblActUpd.dataset.name = chunkGet[i].name;
+            tblActUpd.dataset.description = chunkGet[i].description;
+            tblActUpd.dataset.price = chunkGet[i].price;
+            tblActUpd.dataset.stock = chunkGet[i].stock;
+
+            tblActUpd.addEventListener('click', populateEl);
             tblActDel.innerHTML = 'Delete';
 
             tblRow.appendChild(tblHdr);
+            tblImg.appendChild(tblThumbImg);
+            tblRow.appendChild(tblImg);
             tblRow.appendChild(tblTitle);
             tblRow.appendChild(tblDesc);
             tblRow.appendChild(tblCatg);
@@ -249,8 +349,6 @@
     function fileUpl()
     {
         const previewImg = document.getElementById('previewImg');
-        // let imgCtr = 0;
-
         previewImg.innerHTML = '';
 
         if (this.files) {
@@ -297,6 +395,137 @@
         }
     }
 
+    function updSelect(opt)
+    {
+
+        const catgRef = this.children; // this.children
+        let catgRefVal = null; // catg val
+
+        console.log('this: ', this);
+
+        if (this.id.includes('upd')) {
+
+            console.log('update!!');
+
+            for (let i = 1; i < catgRef.length; i++) {
+                if (catgRef[i].selected == true) {
+                    catgRefVal = catgRef[i].value;
+                    console.log('catgRefVal: ', catgRefVal);
+                    updSelectSub(catgRefVal, 'upd', true);
+                    break;
+                }
+            }
+        } else {
+            console.log('not upd');
+
+            for (let i = 1; i < catgRef.length; i++) {
+                if (catgRef[i].selected == true) {
+                    catgRefVal = catgRef[i].value;
+                    updSelectSub(catgRefVal, 'ins');
+                    break;
+                }
+            }
+        }
+    }
+
+    function updSelectSub(catgRefVal, type, init, subcatVal)
+    {
+        console.log('val: ', catgRefVal);
+        console.log('type: ', type);
+        console.log('init: ', init);
+        console.log('subcatVal: ', subcatVal);
+        let subcatg = null;
+        const subcatgHeader = document.createElement('option');
+
+        if (type == 'ins') {
+            subcatg = document.getElementById('subcatg');
+            subcatgHeader.selected = true;
+        } else if (type == 'upd') {
+            subcatg = document.getElementById('updSubcatg');
+
+            if (init) {
+                subcatgHeader.selected = true;
+            }
+        }
+        subcatg.innerHTML = '';
+
+        const subcatgFHR = document.createElement('option');
+        subcatgFHR.value = 'FHR';
+        subcatgFHR.innerHTML = 'For Her';
+        const subcatgFHM = document.createElement('option');
+        subcatgFHM.value = 'FHM';
+        subcatgFHM.innerHTML = 'For Him';
+
+        subcatgHeader.innerHTML = tempLit`${catgRefVal}`;
+
+        if (catgRefVal === 'AP') {
+            subcatg.appendChild(subcatgFHR);
+            subcatg.appendChild(subcatgFHM);
+        } else if (catgRefVal === 'BK') {
+            const subcatgAAC = document.createElement('option');
+            subcatgAAC.value = 'AAC';
+            subcatgAAC.innerHTML = 'Art';
+            const subcatgFTN = document.createElement('option');
+            subcatgFTN.value = 'FTN';
+            subcatgFTN.innerHTML = 'Fiction';
+            const subcatgPHL = document.createElement('option');
+            subcatgPHL.value = 'PHL';
+            subcatgPHL.innerHTML = 'Philosophy';
+            const subcatgPSY = document.createElement('option');
+            subcatgPSY.value = 'PSY';
+            subcatgPSY.innerHTML = 'Psychology';
+            const subcatgSFH = document.createElement('option');
+            subcatgSFH.value = 'SFH';
+            subcatgSFH.innerHTML = 'Self-Help';
+
+            subcatg.appendChild(subcatgAAC);
+            subcatg.appendChild(subcatgFTN);
+            subcatg.appendChild(subcatgPHL);
+            subcatg.appendChild(subcatgPSY);
+            subcatg.appendChild(subcatgSFH);
+        } else if (catgRefVal === 'GT') {
+            const subcatgCAT = document.createElement('option');
+            subcatgCAT.value = 'CAT';
+            subcatgCAT.innerHTML = 'Coffee &#x26; Tea';
+            const subcatgSNK = document.createElement('option');
+            subcatgSNK.value = 'SNK';
+            subcatgSNK.innerHTML = 'Snacks';
+
+            subcatg.appendChild(subcatgCAT);
+            subcatg.appendChild(subcatgSNK);
+        } else if (catgRefVal === 'MD') {
+            const subcatgAUD = document.createElement('option');
+            subcatgAUD.value = 'AUD';
+            subcatgAUD.innerHTML = 'Audio';
+            const subcatgPTG = document.createElement('option');
+            subcatgPTG.value = 'PTG';
+            subcatgPTG.innerHTML = 'Photography';
+
+            subcatg.appendChild(subcatgAUD);
+            subcatg.appendChild(subcatgPTG);
+        } else if (catgRefVal === 'PC') {
+            subcatg.appendChild(subcatgFHR);
+            subcatg.appendChild(subcatgFHM);
+        }
+
+        subcatg.prepend(subcatgHeader);
+    }
+
+    function tempLit(str, val)
+    {
+        const tempVal = val;
+        let tempStr;
+
+        tempStr = tempVal === 'AP' ? 'apparel' :
+                  tempVal === 'BK' ? 'book' :
+                  tempVal === 'GT' ? 'gourmet' :
+                  tempVal === 'MD' ? 'media' :
+                  tempVal === 'PC' ? 'personal care' :
+                  'undefined';
+
+        return `Select ${tempStr} subcategory`;
+    }
+
     function storeProd(e)
     {
         e.preventDefault();
@@ -308,7 +537,6 @@
         let catgV;
         let subcatgV;
         let thumbV;
-        // let auxV = [];
 
         console.log(prevwCh.length);
 
@@ -368,95 +596,69 @@
         })
     }
 
-    function updSelect()
+    function populateEl(el)
     {
-        const subcatg = document.getElementById('subcatg');
-        const catgRef = this.children;
-        const subcatgHeader = document.createElement('option');
-        subcatgHeader.selected = true;
-        const subcatgFHR = document.createElement('option');
-        subcatgFHR.value = 'FHR';
-        subcatgFHR.innerHTML = 'For Her';
-        const subcatgFHM = document.createElement('option');
-        subcatgFHM.value = 'FHM';
-        subcatgFHM.innerHTML = 'For Him';
-        let catgRefVal;
+        console.log('el: ', el.target);
+        const updProd = document.getElementById('updProd');
+        const updPreviewImg = document.getElementById('updPreviewImg');
+        updPreviewImg.innerHTML = '';
+        const updSelCatg = document.getElementById('updCatg').children;
+        const updSelSubcatg = document.getElementById('updSubcatg');
 
-        subcatg.innerHTML = '';
+        const updRow = el.target.dataset.row;
+        const updName = el.target.dataset.name;
+        const updDesc = el.target.dataset.description;
+        const updCatgRef = el.target.dataset.category_id;
+        const updSubcatgRef = el.target.dataset.subcategory_id;
+        const updPr = el.target.dataset.price;
+        const updStk = el.target.dataset.stock;
+        let updThumbSrc = null;
+        let updAux = null;
 
-        for (let i = 1; i < catgRef.length; i++) {
-            if (catgRef[i].selected == true) {
-                catgRefVal = catgRef[i].value;
-                subcatgHeader.innerHTML = tempLit`${catgRefVal}`;
-                if (catgRefVal === 'AP') {
-                    subcatg.appendChild(subcatgFHR);
-                    subcatg.appendChild(subcatgFHM);
-                } else if (catgRefVal === 'BK') {
-                    const subcatgAAC = document.createElement('option');
-                    subcatgAAC.value = 'AAC';
-                    subcatgAAC.innerHTML = 'Art';
-                    const subcatgFTN = document.createElement('option');
-                    subcatgFTN.value = 'FTN';
-                    subcatgFTN.innerHTML = 'Fiction';
-                    const subcatgPHL = document.createElement('option');
-                    subcatgPHL.value = 'PHL';
-                    subcatgPHL.innerHTML = 'Philosophy';
-                    const subcatgPSY = document.createElement('option');
-                    subcatgPSY.value = 'PSY';
-                    subcatgPSY.innerHTML = 'Psychology';
-                    const subcatgSFH = document.createElement('option');
-                    subcatgSFH.value = 'SFH';
-                    subcatgSFH.innerHTML = 'Self-Help';
+        const all = el.target.dataset;
 
-                    subcatg.appendChild(subcatgAAC);
-                    subcatg.appendChild(subcatgFTN);
-                    subcatg.appendChild(subcatgPHL);
-                    subcatg.appendChild(subcatgPSY);
-                    subcatg.appendChild(subcatgSFH);
-                } else if (catgRefVal === 'GT') {
-                    const subcatgCAT = document.createElement('option');
-                    subcatgCAT.value = 'CAT';
-                    subcatgCAT.innerHTML = 'Coffee &#x26; Tea';
-                    const subcatgSNK = document.createElement('option');
-                    subcatgSNK.value = 'SNK';
-                    subcatgSNK.innerHTML = 'Snacks';
+        for (let i in all) {
+            if (i.startsWith('thumb')) {
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'd-flex bg-primary bg-opacity-25 m-2';
+                const thumbImg = document.createElement('img');
+                thumbImg.className = 'mx-auto d-block flex-shrink-0 p-2';
+                thumbImg.src = all[i];
+                thumbImg.style.objectFit = 'cover';
+                thumbImg.style.width = '100px';
+                thumbImg.style.height = '100px';
+                updThumbSrc = all[i];
 
-                    subcatg.appendChild(subcatgCAT);
-                    subcatg.appendChild(subcatgSNK);
-                } else if (catgRefVal === 'MD') {
-                    const subcatgAUD = document.createElement('option');
-                    subcatgAUD.value = 'AUD';
-                    subcatgAUD.innerHTML = 'Audio';
-                    const subcatgPTG = document.createElement('option');
-                    subcatgPTG.value = 'PTG';
-                    subcatgPTG.innerHTML = 'Photography';
+                thumbDiv.appendChild(thumbImg);
+                updPreviewImg.prepend(thumbDiv);
+            } else if (i.startsWith('aux')) {
+                const auxDiv = document.createElement('div');
+                auxDiv.className = 'd-flex bg-secondary bg-opacity-25 m-2';
+                const auxImg = document.createElement('img');
+                auxImg.className = 'mx-auto d-block flex-shrink-0 p-2';
+                auxImg.src = all[i];
+                auxImg.style.objectFit = 'cover';
+                auxImg.style.width = '100px';
+                auxImg.style.height = '100px';
 
-                    subcatg.appendChild(subcatgAUD);
-                    subcatg.appendChild(subcatgPTG);
-                } else if (catgRefVal === 'PC') {
-                    subcatg.appendChild(subcatgFHR);
-                    subcatg.appendChild(subcatgFHM);
-                }
+                auxDiv.appendChild(auxImg);
+                updPreviewImg.appendChild(auxDiv);
+            }
+        }
 
-                subcatg.prepend(subcatgHeader);
+        for (let i = 0; i < updSelCatg.length; i++) {
+            if (updSelCatg[i].value == updCatgRef) {
+                updSelCatg[i].selected = true;
+                updSelectSub(updSelCatg[i].value, 'upd', false, updSubcatgRef);
                 break;
             }
         }
-    }
 
-    function tempLit(str, val)
-    {
-        const tempVal = val;
-        let tempStr;
-
-        tempStr = tempVal === 'AP' ? 'apparel' :
-                  tempVal === 'BK' ? 'book' :
-                  tempVal === 'GT' ? 'gourmet' :
-                  tempVal === 'MD' ? 'media' :
-                  tempVal === 'PC' ? 'personal care' :
-                  'undefined';
-
-        return `Select ${tempStr} subcategory`;
+        console.log('upd name: ', updProd.updName);
+        updProd.updName.value = updName;
+        updProd.updDescription.value = updDesc;
+        updProd.updPrice.value = updPr;
+        updProd.updStock.value = updStk;
     }
 </script>
 @endsection
