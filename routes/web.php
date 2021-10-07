@@ -21,6 +21,7 @@ use App\Http\Controllers\ShopController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/admin', [HomeController::class, 'admin'])->name('admin');
 Route::get('/register', [HomeController::class, 'register'])->name('register.index');
+Route::get('/shop', [DashboardController::class, 'shop'])->name('shop.index');
 
 Route::post('/register/create', [AccountController::class, 'store'])->name('register.store');
 Route::post('/admin/auth', [AccountController::class, 'authenticate'])->name('admin.auth');
@@ -40,8 +41,9 @@ Route::post('/products/store', [ProductController::class, 'store'])->name('produ
 Route::post('/products/update', [ProductController::class, 'update'])->name('products.update');
 Route::post('/products/destroy', [ProductController::class, 'destroy'])->name('products.destroy');
 
-Route::get('/shop', [DashboardController::class, 'shop'])->name('shop.index');
 Route::get('/address/all', [ShopController::class, 'getAdr'])->name('address.all');
 Route::post('/address/store', [ShopController::class, 'storeAdr'])->name('address.store');
 Route::post('/address/update', [ShopController::class, 'updateAdr'])->name('address.update');
 Route::post('/address/destroy', [ShopController::class, 'destroyAdr'])->name('address.destroy');
+
+Route::get('/shop/products/all', [ProductController::class, 'getProd'])->name('cust.products.all');

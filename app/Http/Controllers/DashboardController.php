@@ -28,12 +28,6 @@ class DashboardController extends Controller
 
     public function settings()
     {
-        $customer = Customer::find(1);
-
-        // dump($customer);
-        // dump($customer->id);
-        // dump($customer->user_id);
-
         return view('customer.settings');
     }
 }
