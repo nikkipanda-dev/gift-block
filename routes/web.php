@@ -25,6 +25,7 @@ Route::post('/register/create', [AccountController::class, 'store'])->name('regi
 Route::post('/admin/auth', [AccountController::class, 'authenticate'])->name('admin.auth');
 
 Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.index');
+Route::get('/admin/orders', [DashboardController::class, 'order'])->name('admin.orders.index');
 Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products.index');
 Route::get('/admin/products/all', [ProductController::class, 'getProd'])->name('admin.products.all');
 
