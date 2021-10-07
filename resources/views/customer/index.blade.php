@@ -1,7 +1,7 @@
 @extends('layout.app')
 
 @section('content')
-<form action="{{ route('admin.auth') }}" method="post" id="admForm">
+<form action="{{ route('cust.auth') }}" method="post" id="custForm">
     @csrf
     <div class="mb-3">
       <label for="email" class="form-label">Email address:</label>
@@ -20,30 +20,30 @@
 
 <script>
 
-    window.addEventListener('load', admIdx);
+    window.addEventListener('load', custIdx);
 
-    function admIdx() {
-        const admForm = document.getElementById('admForm');
+    function custIdx() {
+        const custForm = document.getElementById('custForm');
 
-        if (admForm) {
-            admForm.addEventListener('submit', admAuth);
+        if (custForm) {
+            custForm.addEventListener('submit', custAuth);
         }
     }
 
-    function admAuth(e) {
+    function custAuth(e) {
         e.preventDefault();
 
-        const admParam = new FormData();
+        const custParam = new FormData();
 
-        admParam.append('email', this.email.value);
-        admParam.append('pw', this.pw.value);
-        admParam.append('remember', this.remember.checked);
+        custParam.append('email', this.email.value);
+        custParam.append('pw', this.pw.value);
+        custParam.append('remember', this.remember.checked);
 
-        axios.post(this.action, admParam)
+        axios.post(this.action, custParam)
 
         .then (response => {
-            console.log(response);
-            window.location.pathname = '/admin/dashboard';
+            const custScs = response.data;
+            (!response.data['ACP']) ? window.location.pathname = '/shop/dashboard' : undefined;
         })
 
         .catch (error => {

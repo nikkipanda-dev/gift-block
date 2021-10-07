@@ -848,7 +848,6 @@
         .catch (error => {
             console.log('error: ', error);
         })
-
     }
 </script>
 @endsection
