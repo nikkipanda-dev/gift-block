@@ -15,7 +15,7 @@
                     hi
                 </div>
             </div>
-            <div class="tab-content col-12 col-md-9 bg-secondary bg-opacity-10" id="tabContent">
+            <div class="tab-content col-12 col-md-10 bg-secondary bg-opacity-10" id="tabContent">
                 <div class="tab-pane fade show active" id="vPillsProfile" role="tabpanel">
                     Profile<br />
                 </div>

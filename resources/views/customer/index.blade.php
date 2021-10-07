@@ -1,7 +1,7 @@
 @extends('layout.app')
 
 @section('content')
-<form action="{{ route('cust.auth') }}" method="post" id="custForm">
+<form action="{{ route('customer.auth') }}" method="post" id="custForm">
     @csrf
     <div class="mb-3">
       <label for="email" class="form-label">Email address:</label>

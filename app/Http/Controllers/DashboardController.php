@@ -11,6 +11,11 @@ class DashboardController extends Controller
         return view('admin.dashboard');
     }
 
+    public function adminProd()
+    {
+        return view('admin.products');
+    }
+
     public function order()
     {
         return view('admin.orders');
@@ -24,6 +29,11 @@ class DashboardController extends Controller
     public function customer()
     {
         return view('customer.dashboard');
+    }
+
+    public function customerProd()
+    {
+        return view('customer.products');
     }
 
     public function settings()

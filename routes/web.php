@@ -23,27 +23,30 @@ Route::get('/admin', [HomeController::class, 'admin'])->name('admin');
 Route::get('/register', [HomeController::class, 'register'])->name('register.index');
 Route::get('/shop', [DashboardController::class, 'shop'])->name('shop.index');
 
-Route::post('/register/create', [AccountController::class, 'store'])->name('register.store');
+// Auth
+Route::post('/register/store', [AccountController::class, 'store'])->name('register.store');
 Route::post('/admin/auth', [AccountController::class, 'authenticate'])->name('admin.auth');
-Route::post('/cust/auth', [AccountController::class, 'authenticate'])->name('cust.auth');
+Route::post('/cust/auth', [AccountController::class, 'authenticate'])->name('customer.auth');
 
-Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.index');
+// Shop views
 Route::get('/shop/dashboard', [DashboardController::class, 'customer'])->name('customer.index');
-
+Route::get('/shop/products', [DashboardController::class, 'customerProd'])->name('customer.products.index');
 Route::get('/shop/settings', [DashboardController::class, 'settings'])->name('customer.settings.index');
 
+// Admin views
+Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.index');
 Route::get('/admin/orders', [DashboardController::class, 'order'])->name('admin.orders.index');
+Route::get('/admin/products', [DashboardController::class, 'adminProd'])->name('admin.products.index');
 
-Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products.index');
+// Product
 Route::get('/admin/products/all', [ProductController::class, 'getProd'])->name('admin.products.all');
-
+Route::get('/shop/products/all', [ProductController::class, 'getProd'])->name('customer.products.all');
 Route::post('/products/store', [ProductController::class, 'store'])->name('products.store');
 Route::post('/products/update', [ProductController::class, 'update'])->name('products.update');
 Route::post('/products/destroy', [ProductController::class, 'destroy'])->name('products.destroy');
 
+// Shipping address
 Route::get('/address/all', [ShopController::class, 'getAdr'])->name('address.all');
 Route::post('/address/store', [ShopController::class, 'storeAdr'])->name('address.store');
 Route::post('/address/update', [ShopController::class, 'updateAdr'])->name('address.update');
 Route::post('/address/destroy', [ShopController::class, 'destroyAdr'])->name('address.destroy');
-
-Route::get('/shop/products/all', [ProductController::class, 'getProd'])->name('cust.products.all');
