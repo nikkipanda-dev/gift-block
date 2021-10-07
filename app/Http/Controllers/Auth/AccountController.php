@@ -39,6 +39,8 @@ class AccountController extends Controller
 
     public function authenticate(Request $request)
     {
+        $isAdm = false;
+
         $this->validate($request, [
             'email' => 'bail|required|email',
             'pw' => 'bail|required',
@@ -46,9 +48,13 @@ class AccountController extends Controller
         ]);
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->pw], $request->remember)) {
+            if ($request->path() == 'admin/auth') {
+                $isAdm = true;
+            }
+
             $request->session()->regenerate();
         }
 
-        return response()->json($request->all());
+        return response()->json([$request->all(), 'ACP' => $isAdm]);
     }
 }
