@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -137,5 +138,47 @@ class ShopController extends Controller
         }
 
         return response()->json([$request->all(), 'isValid' => $isValid]);
+    }
+
+    public function storeCart(Request $request)
+    {
+
+        $saved = false;
+
+        if ($request->usr == Auth::user()->id) {
+            $user = User::find($request->usr);
+
+            if ($user) {
+                $product = Product::find($request->ref);
+
+                if ($product) {
+                    if ($product->user_id !== $request->usr) {
+                        // if ($request->session()->exists('cart')) {
+                        //     $request->session()->forget('cart');
+                        // }
+                        $request->session()->push('cart', $product);
+                        $request->session()->flash('alert', 'Added '.$product->name.' to shopping cart.');
+                        $saved = true;
+                    }
+                }
+            }
+        }
+
+        $usrSesh = $request->session()->all();
+
+        return response()->json([$request->all(), 'isValid' => $saved, 'session' => $usrSesh]);
+    }
+
+    public function showCart(Request $request)
+    {
+        $hasCart = false;
+        $cartSesh = null;
+
+        if ($request->session()->has('cart')) {
+            $cartSesh = $request->session()->get('cart');
+            $hasCart = true;
+        }
+
+        return response()->json(['hasProd' => $hasCart, 'cart' => $cartSesh]);
     }
 }

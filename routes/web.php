@@ -32,6 +32,7 @@ Route::post('/cust/auth', [AccountController::class, 'authenticate'])->name('cus
 Route::get('/shop/dashboard', [DashboardController::class, 'customer'])->name('customer.index');
 Route::get('/shop/products', [DashboardController::class, 'customerProd'])->name('customer.products.index');
 Route::get('/shop/settings', [DashboardController::class, 'settings'])->name('customer.settings.index');
+Route::get('/shop/cart', [DashboardController::class, 'cart'])->name('customer.cart.index');
 
 // Admin views
 Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.index');
@@ -44,6 +45,8 @@ Route::get('/shop/products/all', [ProductController::class, 'getProd'])->name('c
 Route::post('/products/store', [ProductController::class, 'store'])->name('products.store');
 Route::post('/products/update', [ProductController::class, 'update'])->name('products.update');
 Route::post('/products/destroy', [ProductController::class, 'destroy'])->name('products.destroy');
+Route::get('/products/cart/show', [ShopController::class, 'showCart'])->name('cart.show');
+Route::post('/products/cart/store', [ShopController::class, 'storeCart'])->name('cart.store');
 
 // Shipping address
 Route::get('/address/all', [ShopController::class, 'getAdr'])->name('address.all');

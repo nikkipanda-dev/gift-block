@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-
 class DashboardController extends Controller
 {
     public function admin()
@@ -29,6 +27,11 @@ class DashboardController extends Controller
     public function customer()
     {
         return view('customer.dashboard');
+    }
+
+    public function cart()
+    {
+        return view('customer.cart');
     }
 
     public function customerProd()
