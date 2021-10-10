@@ -17,9 +17,7 @@
             </div>
             <div class="tab-content col-12 col-md-10 bg-secondary bg-opacity-10" id="tabContent">
                 <div class="tab-pane fade show active" id="vPillsAddress" role="tabpanel">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdropAdr">
-                        New address
-                    </button>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" id="shopnCartBtn">View Cart</button>
 
                     <select id="selNum" class="form-select" aria-label="Select number of record per page">
                         <option value="0" selected>Select</option>
@@ -75,8 +73,22 @@
                         @csrf
                         <input type="hidden" name="prodUsr" id="prodUsr" value="{{ Auth::user()->id }}">
                         <input type="hidden" name="prodRef" id="prodRef">
-                        <div>
-                            <button type="submit" class="btn btn-primary">Add to cart</button>
+                        <div class="row row-cols-1 row-cols-sm-2">
+                            <div class="col">
+                                <div class="row row-cols-1 row-cols-sm-2">
+                                    <div class="col col-sm-2 align-self-end">
+                                        <label for="prodQty" class="form-label">Qty: </label>
+                                    </div>
+                                    <div class="col col-sm-10">
+                                        <input class="form-control" type="number" min="1" name="prodQty" id="prodQty" value="1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col mt-2 mt-sm-0">
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Add to cart</button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -116,11 +128,54 @@
     </div>
   </div>
 
+    <div class="offcanvas offcanvas-end" data-bs-scroll="false" data-bs-backdrop="true" data-bs-keyboard="false" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel" style="width: 500px;">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasCartLabel">Shopping Cart</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="list-group list-group-flush" id="shopnCart">
+            <li class="list-group-item">
+                <div class="row justify-content-center align-items-center align-items-sm-stretch">
+                    <div class="col-12 col-sm-9 align-self-sm-center">
+                        <div class="row justify-content-center">
+                            <div class="col-auto">
+                                <img src="https://files.worldwildlife.org/wwfcmsprod/images/Panda_in_Tree/hero_small/99i33zyc0l_Large_WW170579.jpg" style="object-fit: cover; width: 100px; height: 100px;" alt="">
+                            </div>
+                            <div class="col">
+                                <div class="d-flex flex-column justify-content-between">
+                                    <div class="d-flex flex-column">
+                                        <span>Product name here</span>
+                                        <span>ss here</span>
+                                    </div>
+                                    <span class="text-secondary lh-lg">Qty:</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-3 align-self-center">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between p-2 flex-row-reverse flex-sm-nowrap flex-sm-column">
+                            <span class="text-secondary">Amount</span>
+                            <span class="text-danger mt-0 mt-sm-5">Remove</span>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    </div>
 <script>
     window.addEventListener('load', custProd);
 
     function custProd()
     {
+        const shopnCartBtn = document.getElementById('shopnCartBtn');
+
+        if (shopnCartBtn)
+        {
+            shopnCartBtn.addEventListener('click', shopnCart);
+        }
+
         getProd(1, 5);
     }
 
@@ -273,7 +328,7 @@
 
     function populateEl()
     {
-        console.log('EHEHEH', this);
+        console.log('POPULATE FN', this);
 
         const crselInr = document.getElementById('crselInr');
         crselInr.innerHTML = '';
@@ -283,6 +338,8 @@
         prodForm.addEventListener('submit', addOrd);
         const prodRef = document.getElementById('prodRef');
         prodRef.value = this.dataset.id;
+        const prodQty = document.getElementById('prodQty');
+        prodQty.setAttribute('max', this.dataset.stock);
         const navDesc = document.getElementById('nav-description');
         const navAbt = document.getElementById('nav-about');
         const navFAQ = document.getElementById('nav-faq');
@@ -344,6 +401,7 @@
 
         cartParam.append('usr', this.prodUsr.value);
         cartParam.append('ref', this.prodRef.value);
+        cartParam.append('qty', this.prodQty.value);
 
         axios.post(this.action, cartParam)
 
@@ -353,6 +411,152 @@
 
         .catch(error => {
             console.log(error.response.data.errors);
+        })
+    }
+
+    function rmvOrd()
+    {
+        console.log('rmv pls: ', this);
+
+        const rmvOrdParam = new FormData();
+
+        rmvOrdParam.append('usr', this.dataset.usr);
+        rmvOrdParam.append('ref', this.dataset.ref);
+        rmvOrdParam.append('id', this.dataset.id);
+
+        axios.post('/products/cart/destroy', rmvOrdParam)
+
+        .then(response => {
+            console.log('response: ', response.data);
+        })
+
+        .catch(error => {
+            console.log('error: ', error);
+        })
+    }
+
+    function shopnCart()
+    {
+        console.log('shopn cartttt', this);
+
+        const shopnCartPrnt = document.getElementById('shopnCart');
+        shopnCartPrnt.innerHTML = '';
+        const stWrp = document.createElement('row');
+        const hRule = document.createElement('hr');
+        const stLblCon = document.createElement('div');
+        stLblCon.classList.add('col');
+        const stLbl = document.createElement('span');
+        const stAmtCon = document.createElement('div');
+        stAmtCon.classList.add('col');
+        const stAmt = document.createElement('span');
+        let stDump = null;
+        let st = null;
+
+        axios.get('/products/cart/show')
+
+        .then(response => {
+            console.log('cart: ', response.data);
+            const cartItems = response.data;
+
+            for (let i in cartItems) {
+                for (let j in cartItems[i]) {
+                    console.log('j: ', j);
+                    const listWrp = document.createElement('li');
+                    listWrp.classList.add('list-group-item');
+                    const listDiv = document.createElement('div');
+                    listDiv.classList.add('row', 'justify-content-center', 'align-items-center');
+                    const listLeftPnl = document.createElement('div');
+                    listLeftPnl.classList.add('col-12', 'col-sm-9', 'align-self-sm-center');
+                    const listLeftCtrl = document.createElement('div');
+                    listLeftCtrl.classList.add('row', 'justify-content-center');
+
+                    const listProdDetCon = document.createElement('div');
+                    listProdDetCon.classList.add('col-12', 'col-sm-8');
+                    const listProdDetCtrl = document.createElement('div');
+                    listProdDetCtrl.classList.add('d-flex', 'flex-column');
+                    const listProdImgCon = document.createElement('div');
+                    listProdImgCon.classList.add('col-12', 'col-sm-4');
+                    const listProdImg = document.createElement('img');
+                    listProdImg.style.width = '100px';
+                    listProdImg.style.height = '100px';
+                    listProdImg.style.objectFit = 'cover';
+                    listProdImg.classList.add('mx-auto', 'd-block');
+                    const listProdDetTopWrp = document.createElement('div');
+                    listProdDetTopWrp.classList.add('d-flex', 'flex-column', 'mt-2', 'mt-sm-0');
+                    const listProdName = document.createElement('span');
+                    const listProdPr = document.createElement('span');
+                    const listProdQty = document.createElement('span');
+                    listProdQty.classList.add('mt-2', 'mt-sm-4');
+
+                    const listRightPnl = document.createElement('div');
+                    listRightPnl.classList.add('col-12', 'col-sm-3', 'align-self-center');
+                    const listRightCtrl = document.createElement('div');
+                    listRightCtrl.classList.add('d-flex', 'flex-wrap', 'align-items-center', 'justify-content-between', 'p-2', 'flex-row-reverse', 'flex-sm-nowrap', 'flex-sm-column');
+                    const listProdAmt = document.createElement('span');
+                    listProdAmt.classList.add('mt-2');
+                    const listProdDes = document.createElement('button');
+                    listProdDes.classList.add('btn', 'text-danger', 'mt-0', 'mt-sm-5');
+
+                    for (let k in cartItems[i][j]) {
+                        if ((k !== 'thumb') && (k !== 'qty') && (k !== 'st')) {
+                            listProdName.innerHTML = cartItems[i][j][k].name;
+                            listProdPr.innerHTML = 'Price: ' + cartItems[i][j][k].price;
+                            listProdDes.dataset.usr = cartItems[i][j][k].user_id;
+                            listProdDes.dataset.id = cartItems[i][j][k].id;
+                            listProdDes.dataset.ref = cartItems[i][j][k].reference;
+                        }
+
+                        if (k == 'thumb') {
+                            listProdImg.src = '/' + cartItems[i][j][k];
+                        }
+
+                        if (k == 'qty') {
+                            listProdQty.innerHTML = 'Qty: ' + cartItems[i][j][k];
+                        }
+
+                        if (k == 'st') {
+                            st = cartItems[i][j][k];
+                            stDump += st;
+                            listProdAmt.innerHTML = '&#x20B1;' + st.toFixed(2);
+                        }
+
+                        listProdDes.innerHTML = 'Remove';
+                        listProdDes.addEventListener('click', rmvOrd);
+                    }
+
+                    listProdDetTopWrp.prepend(listProdName);
+                    listProdDetTopWrp.appendChild(listProdPr);
+                    listProdDetCtrl.prepend(listProdDetTopWrp);
+                    listProdDetCtrl.appendChild(listProdQty);
+                    listProdDetCon.appendChild(listProdDetCtrl);
+                    listProdImgCon.appendChild(listProdImg);
+                    listLeftCtrl.prepend(listProdImgCon);
+                    listLeftCtrl.appendChild(listProdDetCon);
+                    listLeftPnl.appendChild(listLeftCtrl);
+                    listRightCtrl.prepend(listProdAmt);
+                    listRightCtrl.appendChild(listProdDes);
+                    listRightPnl.appendChild(listRightCtrl);
+                    listDiv.prepend(listLeftPnl);
+                    listDiv.appendChild(listRightPnl);
+                    listWrp.appendChild(listDiv);
+                    shopnCartPrnt.prepend(listWrp);
+                }
+            }
+
+            if (stDump) {
+                stAmt.innerHTML = stDump.toFixed(2);
+                stLbl.innerHTML = 'Subtotal:';
+
+                stLblCon.appendChild(stLbl);
+                stAmtCon.appendChild(stAmt);
+                stWrp.prepend(stLblCon);
+                stWrp.appendChild(stAmtCon);
+                shopnCartPrnt.appendChild(stWrp);
+            }
+        })
+
+        .catch(error => {
+            console.log('err: ', error);
         })
     }
 </script>

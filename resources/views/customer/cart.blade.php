@@ -10,7 +10,7 @@
         axios.get('/products/cart/show')
 
         .then(response => {
-            console.log(response);
+            console.log(response.data);
         })
 
         .catch(error => {

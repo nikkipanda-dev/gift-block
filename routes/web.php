@@ -47,6 +47,7 @@ Route::post('/products/update', [ProductController::class, 'update'])->name('pro
 Route::post('/products/destroy', [ProductController::class, 'destroy'])->name('products.destroy');
 Route::get('/products/cart/show', [ShopController::class, 'showCart'])->name('cart.show');
 Route::post('/products/cart/store', [ShopController::class, 'storeCart'])->name('cart.store');
+Route::post('/products/cart/destroy', [ShopController::class, 'destroyCart'])->name('cart.destroy');
 
 // Shipping address
 Route::get('/address/all', [ShopController::class, 'getAdr'])->name('address.all');

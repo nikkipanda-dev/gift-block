@@ -144,6 +144,8 @@ class ShopController extends Controller
     {
 
         $saved = false;
+        $image = null;
+        $ST = null;
 
         if ($request->usr == Auth::user()->id) {
             $user = User::find($request->usr);
@@ -153,12 +155,29 @@ class ShopController extends Controller
 
                 if ($product) {
                     if ($product->user_id !== $request->usr) {
-                        // if ($request->session()->exists('cart')) {
-                        //     $request->session()->forget('cart');
-                        // }
-                        $request->session()->push('cart', $product);
-                        $request->session()->flash('alert', 'Added '.$product->name.' to shopping cart.');
-                        $saved = true;
+                        if (($request->session()->exists('cart.'.$product->id.'.qty')) && ($request->session()->exists('cart.'.$product->id.'.st'))) {
+                            $request->session()->put('cart.'.$product->id.'.qty', $request->qty);
+                            $ST = floatval($product->price) * $request->qty;
+                            $request->session()->put('cart.'.$product->id.'.st', $ST);
+                            $saved = true;
+                        } else {
+                            $request->session()->push('cart.'.$product->id, $product);
+                            $request->session()->put('cart.'.$product->id.'.qty', $request->qty);
+                            $ST = floatval($product->price) * $request->qty;
+                            $request->session()->put('cart.'.$product->id.'.st', $ST);
+
+                            if ($product->images) {
+                                foreach ($product->images as $image) {
+                                    $saved = true;
+                                    if ($image->prod_img->image_id == 1) {
+                                        $request->session()->put('cart.'.$product->id.'.thumb', $image->prod_img->path);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            $request->session()->flash('alert', 'Added '.$product->name.' to shopping cart.');
+                        }
                     }
                 }
             }
@@ -180,5 +199,32 @@ class ShopController extends Controller
         }
 
         return response()->json(['hasProd' => $hasCart, 'cart' => $cartSesh]);
+    }
+
+    public function destroyCart(Request $request)
+    {
+        $isValid = false;
+
+        if (Auth::check()) {
+            if ($request->usr !== Auth::user()->id) {
+                $product = Product::with('images')->where('reference', $request->ref)->first();
+
+                if ($product) {
+                    if (($product->user_id == $request->usr) && ($product->id == $request->id)) {
+                        if ($request->session()->exists('cart.'.$product->id)) {
+                            $rmv_prod = $request->session()->pull('cart.'.$product->id);
+                            if ($request->session()->missing('cart.'.$product->id)) {
+                                $request->session()->flash('alert', 'Removed '.$product->name.' from cart.');
+                                $isValid = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $usrSesh = $request->session()->all();
+
+        return response()->json([$request->all(), 'isValid' => $isValid, 'removed' => $rmv_prod, 'session' => $usrSesh]);
     }
 }

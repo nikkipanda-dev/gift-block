@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+
 class DashboardController extends Controller
 {
     public function admin()
@@ -36,6 +38,10 @@ class DashboardController extends Controller
 
     public function customerProd()
     {
+        $product = Product::find(10);
+
+        // dump($product);
+
         return view('customer.products');
     }
 
