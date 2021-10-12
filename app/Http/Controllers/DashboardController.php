@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
+use App\Models\Product;
 
 class DashboardController extends Controller
 {
@@ -31,8 +31,17 @@ class DashboardController extends Controller
         return view('customer.dashboard');
     }
 
+    public function cart()
+    {
+        return view('customer.cart');
+    }
+
     public function customerProd()
     {
+        $product = Product::find(10);
+
+        // dump($product);
+
         return view('customer.products');
     }
 

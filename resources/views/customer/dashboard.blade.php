@@ -7,6 +7,7 @@
         </button>
 
         <a href="{{ route('customer.products.index') }}">Browse all</a>
+        <a href="{{ route('customer.cart.index') }}">Cart</a>
 
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
             <li><a class="dropdown-item" href="{{ route('customer.settings.index') }}">Settings</a></li>
