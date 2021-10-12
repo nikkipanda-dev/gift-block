@@ -144,7 +144,9 @@ class ShopController extends Controller
     {
 
         $saved = false;
+        $target_prod = null;
         $image = null;
+        $prev_st = null;
         $ST = null;
 
         if ($request->usr == Auth::user()->id) {
@@ -156,10 +158,12 @@ class ShopController extends Controller
                 if ($product) {
                     if ($product->user_id !== $request->usr) {
                         if (($request->session()->exists('cart.'.$product->id.'.qty')) && ($request->session()->exists('cart.'.$product->id.'.st'))) {
+                            $prev_st = $request->session()->get('cart.'.$product->id.'.st');
                             $request->session()->put('cart.'.$product->id.'.qty', $request->qty);
                             $ST = floatval($product->price) * $request->qty;
                             $request->session()->put('cart.'.$product->id.'.st', $ST);
                             $saved = true;
+                            $target_prod = $request->session()->get('cart.'.$product->id);
                         } else {
                             $request->session()->push('cart.'.$product->id, $product);
                             $request->session()->put('cart.'.$product->id.'.qty', $request->qty);
@@ -168,9 +172,9 @@ class ShopController extends Controller
 
                             if ($product->images) {
                                 foreach ($product->images as $image) {
-                                    $saved = true;
                                     if ($image->prod_img->image_id == 1) {
                                         $request->session()->put('cart.'.$product->id.'.thumb', $image->prod_img->path);
+                                        $saved = true;
                                         break;
                                     }
                                 }
@@ -185,7 +189,7 @@ class ShopController extends Controller
 
         $usrSesh = $request->session()->all();
 
-        return response()->json([$request->all(), 'isValid' => $saved, 'session' => $usrSesh]);
+        return response()->json([$request->all(), 'isValid' => $saved, 'session' => $usrSesh, 'target' => $target_prod, 'prevSt' => $prev_st]);
     }
 
     public function showCart(Request $request)

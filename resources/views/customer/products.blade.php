@@ -395,23 +395,49 @@
     {
         ord.preventDefault();
 
-        console.log('order: ', this);
+        console.log('UPDATE order: ', this);
 
         const cartParam = new FormData();
+        let updOrd = null;
 
-        cartParam.append('usr', this.prodUsr.value);
-        cartParam.append('ref', this.prodRef.value);
-        cartParam.append('qty', this.prodQty.value);
+        if (this.id.startsWith('cart-')) {
+            cartParam.append('usr', this.dataset.usr);
+            cartParam.append('ref', this.dataset.ref);
+            cartParam.append('qty', this.value);
 
-        axios.post(this.action, cartParam)
+            axios.post('/products/cart/store', cartParam)
 
-        .then(response => {
-            console.log(response);
-        })
+            .then(response => {
+                updOrd = response.data;
 
-        .catch(error => {
-            console.log(error.response.data.errors);
-        })
+                if (updOrd.isValid && updOrd.prevSt) {
+                    const prodAmt = document.getElementById('amt-' + updOrd.target[0].reference);
+                    const updStAmt = document.getElementById('st');
+
+                    prodAmt.innerHTML = '&#x20B1;' + updOrd.target.st.toFixed(2);
+                    updStAmt.innerHTML = ((Number(updStAmt.innerText) - Number(updOrd.prevSt)) + Number(updOrd.target.st)).toFixed(2);
+                }
+            })
+
+            .catch(error => {
+                console.log(error.response.data.errors);
+            })
+
+        } else {
+            cartParam.append('usr', this.prodUsr.value);
+            cartParam.append('ref', this.prodRef.value);
+            cartParam.append('qty', this.prodQty.value);
+
+            axios.post(this.action, cartParam)
+
+            .then(response => {
+                console.log(response);
+            })
+
+            .catch(error => {
+                console.log(error.response.data.errors);
+            })
+        }
     }
 
     function rmvOrd()
@@ -449,6 +475,7 @@
         const stAmtCon = document.createElement('div');
         stAmtCon.classList.add('col');
         const stAmt = document.createElement('span');
+        stAmt.id = 'st';
         let stDump = null;
         let st = null;
 
@@ -464,7 +491,7 @@
                     const listWrp = document.createElement('li');
                     listWrp.classList.add('list-group-item');
                     const listDiv = document.createElement('div');
-                    listDiv.classList.add('row', 'justify-content-center', 'align-items-center');
+                    listDiv.classList.add('row', 'justify-content-center', 'align-items-center', 'p-2');
                     const listLeftPnl = document.createElement('div');
                     listLeftPnl.classList.add('col-12', 'col-sm-9', 'align-self-sm-center');
                     const listLeftCtrl = document.createElement('div');
@@ -473,7 +500,7 @@
                     const listProdDetCon = document.createElement('div');
                     listProdDetCon.classList.add('col-12', 'col-sm-8');
                     const listProdDetCtrl = document.createElement('div');
-                    listProdDetCtrl.classList.add('d-flex', 'flex-column');
+                    listProdDetCtrl.classList.add('d-flex', 'flex-column', 'h-100');
                     const listProdImgCon = document.createElement('div');
                     listProdImgCon.classList.add('col-12', 'col-sm-4');
                     const listProdImg = document.createElement('img');
@@ -484,23 +511,35 @@
                     const listProdDetTopWrp = document.createElement('div');
                     listProdDetTopWrp.classList.add('d-flex', 'flex-column', 'mt-2', 'mt-sm-0');
                     const listProdName = document.createElement('span');
-                    const listProdPr = document.createElement('span');
-                    const listProdQty = document.createElement('span');
-                    listProdQty.classList.add('mt-2', 'mt-sm-4');
+                    const listProdSt = document.createElement('span');
+                    const listProdQtyWrp = document.createElement('div');
+                    listProdQtyWrp.classList.add('d-flex', 'flex-column', 'flex-sm-row', 'align-items-sm-center', 'h-100', 'mt-3');
+                    const listProdQtyLbl = document.createElement('label');
+                    listProdQtyLbl.classList.add('form-label', 'align-self-sm-center');
+                    const listProdQty = document.createElement('input');
+                    listProdQty.classList.add('form-control');
+                    listProdQty.type = 'number';
+                    listProdQty.addEventListener('change', addOrd);
 
                     const listRightPnl = document.createElement('div');
-                    listRightPnl.classList.add('col-12', 'col-sm-3', 'align-self-center');
+                    listRightPnl.classList.add('col-12', 'col-sm-3', 'align-self-stretch', 'mt-2', 'mt-sm-0');
                     const listRightCtrl = document.createElement('div');
-                    listRightCtrl.classList.add('d-flex', 'flex-wrap', 'align-items-center', 'justify-content-between', 'p-2', 'flex-row-reverse', 'flex-sm-nowrap', 'flex-sm-column');
+                    listRightCtrl.classList.add('d-flex', 'flex-wrap', 'align-items-center', 'h-100', 'justify-content-between', 'flex-row-reverse', 'flex-sm-nowrap', 'flex-sm-column');
                     const listProdAmt = document.createElement('span');
-                    listProdAmt.classList.add('mt-2');
                     const listProdDes = document.createElement('button');
-                    listProdDes.classList.add('btn', 'text-danger', 'mt-0', 'mt-sm-5');
+                    listProdDes.classList.add('btn', 'btn-danger', 'text-white');
 
                     for (let k in cartItems[i][j]) {
                         if ((k !== 'thumb') && (k !== 'qty') && (k !== 'st')) {
+                            listWrp.id = 'list-' + cartItems[i][j][k].reference;
                             listProdName.innerHTML = cartItems[i][j][k].name;
-                            listProdPr.innerHTML = 'Price: ' + cartItems[i][j][k].price;
+                            listProdSt.innerHTML = 'Stock:&#xa0;' + cartItems[i][j][k].stock;
+                            listProdQtyLbl.setAttribute('for', cartItems[i][j][k].reference);
+                            listProdQty.id = 'cart-' + cartItems[i][j][k].reference;
+                            listProdAmt.id = 'amt-' + cartItems[i][j][k].reference;
+                            listProdQty.max = cartItems[i][j][k].stock;
+                            listProdQty.dataset.usr = "{{ Auth::user()->id }}";
+                            listProdQty.dataset.ref = cartItems[i][j][k].id;
                             listProdDes.dataset.usr = cartItems[i][j][k].user_id;
                             listProdDes.dataset.id = cartItems[i][j][k].id;
                             listProdDes.dataset.ref = cartItems[i][j][k].reference;
@@ -511,7 +550,7 @@
                         }
 
                         if (k == 'qty') {
-                            listProdQty.innerHTML = 'Qty: ' + cartItems[i][j][k];
+                            listProdQty.value = cartItems[i][j][k];
                         }
 
                         if (k == 'st') {
@@ -520,14 +559,18 @@
                             listProdAmt.innerHTML = '&#x20B1;' + st.toFixed(2);
                         }
 
+                        listProdQtyLbl.innerHTML = 'Qty:&#xa0;';
+                        listProdQty.min = '1';
                         listProdDes.innerHTML = 'Remove';
                         listProdDes.addEventListener('click', rmvOrd);
                     }
 
                     listProdDetTopWrp.prepend(listProdName);
-                    listProdDetTopWrp.appendChild(listProdPr);
+                    listProdDetTopWrp.appendChild(listProdSt);
+                    listProdQtyWrp.prepend(listProdQtyLbl);
+                    listProdQtyWrp.appendChild(listProdQty);
                     listProdDetCtrl.prepend(listProdDetTopWrp);
-                    listProdDetCtrl.appendChild(listProdQty);
+                    listProdDetCtrl.appendChild(listProdQtyWrp);
                     listProdDetCon.appendChild(listProdDetCtrl);
                     listProdImgCon.appendChild(listProdImg);
                     listLeftCtrl.prepend(listProdImgCon);
